@@ -1,0 +1,93 @@
+//---------------------------TEST OPERATION DE BASE----------------
+// -1+2+3 :4
+//-1+2+3;
+// 5+6/3 : 7
+5+6/3;
+// (5+6)/3 : 3
+(5+6)/3;
+// -5*6/3 : -10
+//-5*6/3;
+
+//---------------------------TEST OPERATION LOGIQUE---------------
+// 5==8 : 0
+5==8;
+// 5==5: 1
+5==5;
+// 5!=8 : 1
+5!=8;
+// 5!=5 : 0
+5!=5;
+// 5>8 : 0
+5>8;
+// -6 > 8 : 0
+//-6>8;
+// -6< 8: 1
+//-6<8;
+// 5>=8 : 0
+5>=8;
+// 5<8 : 1
+5<8;
+// 5<=8 : 1
+5<=8;
+// 1 or 1 : 1
+1 or 1;
+// 1 or 0 : 1
+1 or 0;
+// 0 or 0 : 0
+0 or 0;
+// 1 and 1 : 1
+1 and 1;
+// 1 and 0 : 0
+1 and 0;
+//!(8==8) : 0
+!(8==8);
+//!(5==8) : 1
+!(5==8);
+// !5==8 -> (!5)==8  : 0
+!5==8;
+
+//---------------------------TEST IF -----------------------------
+// if 0 then 11 else 10 : 10
+if 0 then 11 else 10;
+// if 1 then 11 else 10 : 11
+if 1 then 11 else 11;
+//(if 0 then 11 else 10);
+(if 0 then 11 else 10);
+// (if 1 then 11 else 10) : 11
+(if 1 then 11 else 11);
+
+//------------------------ LET + FUNCTION ----------------------
+//let x=2 : 2
+let x=2;
+//let y=x+2: 4
+let y=x+2;
+//let z=x==y : 0
+let z=x==y;
+// z : 0
+z;
+// x : 2
+x;
+
+//let pgcd= (fun a b -> (if a==b then a else (if a>b then (pgcd a-b b) else (pgcd a b-a))))
+let pgcd= (fun a b -> (if a==b then a else (if a>b then (pgcd (a-b) b) else (pgcd a (b-a)))));
+//(pgcd 96 76) : 4 
+(pgcd 96 76);
+//let pgcd= fun a b -> if a==b then a else if a>b then (pgcd a-b b) else (pgcd a b-a)
+//let pgcd= fun a b -> if a==b then a else if a>b then (pgcd a-b b) else (pgcd a b-a);
+// (pgcd 96 76) : 4 
+//(pgcd 15 30);
+//let double=(fun t->t+2)
+//let double=(fun t->t*2);
+//(double 10) : 20
+//(double 10);
+//let add= fun a b c -> a+b+c;
+let add= fun a b c -> a+b+c;
+//(add (-1) 2 3) : 4
+(add (-1) 2 3);
+//------------------------ LET IN et WHERE ----------------------
+//let f = (let d = 1+1+1 in d*d) : 9
+let f = (let d = 1+1+1 in d*d);
+//let g = let d = 1+1 in d*d : 4
+let g = let d = 1+1 in d*d;
+// let h = d*d where d = f - g : 25
+let h = d*d where d = f - g;
