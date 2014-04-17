@@ -14,10 +14,19 @@
 "in"|"IN"      {return IN;}
 "where"|"WHERE" {return WHERE;}
 "fun"          {return T_FUN;}
+"::"           {return T_PUSH;}
+"pop"          {return T_TOP;}
+"tail"         {return T_NEXT;}
+
+
+
 
 \/\/.*          {ECHO;printf("\n");}
 
-[()]      {return yytext[0];}
+[()]       {return yytext[0];}
+"["        {return T_CRO;}
+"]"        {return T_CRO2;}
+","        {return yytext[0];}
 
 "+"              {return T_PLUS;}
 "-"              {return T_MINUS;}

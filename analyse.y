@@ -9,7 +9,31 @@
 struct env* ENV=NULL;
 struct configuration* CONF = NULL;
 
-
+ void printlist(struct cell c){
+   /* rajouter l'affichage des  ID, APP et des FUN */
+   struct cell *tmp= &c;
+   printf("[ ");
+   while(tmp != NULL){
+     if(tmp->left == NULL){
+       printf("NIL "); 
+     }
+     else{
+       if(tmp->left->type == NUM)
+	 printf("%d ",tmp->left->expr->num);
+       if(tmp->left->type == CELL)
+	 printlist(tmp->left->expr->cell);
+       if(tmp->left->type == NIL){
+	 printf("NIL ");
+	 break;
+       }
+     }
+     if(tmp->right == NULL)
+       break;
+     tmp = &tmp->right->expr->cell;
+    
+   }
+   printf("] "); 
+ }
 %}
 
 %token <num>T_NB
@@ -45,10 +69,20 @@ struct configuration* CONF = NULL;
 %token WHERE
 %token IN
 
+%token T_PUSH
+%token T_TOP
+%token T_NEXT
+
+%token T_CRO
+%token T_CRO2
+
+%type <e>s
 %type <e>expr
 
 %type <e>paradeffun
 %type <e>paraappfun
+%type <e>conslist
+%type <e>liste
 
 %right FLECHE  ELSE
 %right T_EQ
@@ -74,18 +108,36 @@ struct configuration* CONF = NULL;
 %%
 lign:    
 /*empty*/
-| lign expr[exp]  FIN_EXPR       {CONF=mk_conf(mk_closure($exp,ENV)); 						//On ajoute à la configuration l'environnement courant qui contient l'expression
+| lign s[exp]  FIN_EXPR       {CONF=mk_conf(mk_closure($exp,ENV)); 						//On ajoute à la configuration l'environnement courant qui contient l'expression
                                   step(CONF); 												//traite l'information stocker dans la configuration
                                   if(CONF->closure->expr->type == NUM){
-				    printf(">>>>>%d \n",CONF->closure->expr->expr->num);}}					//permet de traiter les expressions
+				    printf(">>>>>%d \n",CONF->closure->expr->expr->num);}
+                                  if(CONF->closure->expr->type == CELL || CONF->closure->expr->type == NIL){
+				    struct cell c = CONF->closure->expr->expr->cell;
+				     printf(">>>>>");printlist(c);printf("\n");}}					//permet de traiter les expressions
 
-| lign LET T_ID[id] T_AF expr[exp1] FIN_EXPR    {ENV = push_rec_env($id,$exp1,ENV);
+| lign LET T_ID[id] T_AF s[exp1] FIN_EXPR    {ENV = push_rec_env($id,$exp1,ENV);
                                                 CONF=mk_conf(mk_closure($exp1,ENV)); 
                                                 step(CONF); 
                                                 if(CONF->closure->expr->type == NUM){
-				                  printf(">>>>>%d \n",CONF->closure->expr->expr->num);}}	//permet de traiter l'affectation des expression
+				                  printf(">>>>>%d \n",CONF->closure->expr->expr->num);
+						}
+						if(CONF->closure->expr->type == CELL || CONF->closure->expr->type == NIL){
+				                 struct cell c = CONF->closure->expr->expr->cell;
+						 printf(">>>>>"); printlist(c);printf("\n");}}	//permet de traiter l'affectation des expression
 | lign FIN_EXPR																				//permet de traiter le cas sans expression
-; 
+;
+
+s:
+expr {$$ = $1;}
+|liste {$$ = $1;}
+|s T_PUSH T_ID  {$$=mk_app(mk_app(mk_op(PUSH),$1),mk_id($3));}	
+|s T_PUSH liste {$$=mk_app(mk_app(mk_op(PUSH),$1),$3);}	
+|T_TOP liste    {$$=mk_app(mk_op(TOP),$2);}	
+|T_TOP T_ID     {$$=mk_app(mk_op(TOP),mk_id($2));}	
+|T_NEXT liste   {$$=mk_app(mk_op(NEXT),$2);}	
+|T_NEXT T_ID    {$$=mk_app(mk_op(NEXT),mk_id($2));}
+;
 
 expr:
 // Nombre ou identifiant
@@ -140,8 +192,21 @@ T_ID[id1] paradeffun[para]       {$$=mk_fun($id1,$para);}
 //gestion des parametre multiple lors d'un appel de fonction
 paraappfun:
 paraappfun[expr1] expr[expr2] %prec T_APP     {$$=mk_app($expr1,$expr2);}
-| T_ID  expr[expr1]            {$$=mk_app(mk_id($1),$expr1);}
-;   
+| expr  expr[expr1]            {$$=mk_app($1,$expr1);}
+;
+
+//syntaxe accepté pour créer une liste
+liste:
+T_CRO conslist[list] T_CRO2  {$$ = $list;}
+|T_CRO T_CRO2 {$$ = mk_cell(NULL,NULL);}
+;
+
+conslist:
+expr[exp1]','conslist[list] {$$ = mk_cell($exp1,$list);}
+|liste[exp1]','conslist[list] {$$ = mk_cell($exp1,$list);}
+| expr    {$$ = mk_cell($1,NULL);} 
+| liste  {$$ = mk_cell($1,NULL);} 
+;
 %%
 
 int main(int argc, char *argv[])

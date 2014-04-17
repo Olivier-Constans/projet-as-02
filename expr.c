@@ -54,3 +54,15 @@ struct expr *mk_cond(struct expr *cond, struct expr *then_br, struct expr *else_
   e->expr->cond.else_br = else_br;
   return e;
 }
+
+struct expr* mk_cell(struct expr * left, struct expr * right){
+   struct expr *e = mk_node();
+   if(left == NULL && right == NULL){
+     e->type =NIL;
+   }else{
+     e->type =CELL;
+   }
+   e->expr->cell.left = left;
+   e->expr->cell.right = right;
+   return e;
+}

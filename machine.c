@@ -117,50 +117,118 @@ void step(struct configuration *conf){
     }
   case NUM: 
     return;
+  case CELL:
+    return;
+  case NIL:
+    return;
   case OP: 
     {
-     struct stack *stack = conf->stack;
-     if(stack==NULL){return;}
-     struct closure *arg1 = stack->closure;
-     stack = pop_stack(stack);
-     conf->closure = arg1;
-     conf->stack = NULL;
-     step(conf);
-     if(conf->closure->expr->type!=NUM){exit(EXIT_FAILURE);}
-     int k1 = conf->closure->expr->expr->num;
-     if(expr->expr->op==NOT){
-       conf->closure->expr->expr->num = !k1;
-       return;
-     }
-     if(stack==NULL){return;}
-     arg1=conf->closure;
-     struct closure *arg2 = stack->closure;
-     stack = pop_stack(stack);
-     conf->closure = arg2;
-     conf->stack=NULL;
-     step(conf);
-     if(conf->closure->expr->type!=NUM){exit(EXIT_FAILURE);}
-     int k2 = conf->closure->expr->expr->num;
-     switch (expr->expr->op){
-     case PLUS: //printf("plus\n");
-       conf->closure = mk_closure(mk_int(k1+k2),NULL);return;
-     case MINUS: //printf("minus\n");
-       conf->closure = mk_closure(mk_int(k1-k2),NULL);return;
-     case MULT: //printf("mult\n");
-       conf->closure = mk_closure(mk_int(k1*k2),NULL);return;
-     case DIV: assert(k2!=0); conf->closure =  mk_closure(mk_int(k1/k2),NULL);return;
-     case LEQ: //printf("%d <= %d \n",k1,k2);
-       conf->closure = mk_closure(mk_int(k1 <= k2),NULL); return;
-     case LE: conf->closure = mk_closure(mk_int(k1 < k2),NULL); return;
-     case GEQ: conf->closure = mk_closure(mk_int(k1 >= k2),NULL); return;
-     case GE: conf->closure = mk_closure(mk_int(k1 > k2),NULL); return;
-     case EQ: conf->closure = mk_closure(mk_int(k1 == k2),NULL); return;
-     case OR: conf->closure = mk_closure(mk_int(k1 || k2),NULL); return;
-     case AND: conf->closure = mk_closure(mk_int(k1 && k2),NULL); return;
-     default: assert(0);
-     }   
-   }
-   ;
+      struct stack *stack = conf->stack;
+      /* 
+	 dans le cas où la pile de la machine est vide,
+	 l'opérateur ne reçoit pas d'argument et le calcul 
+	 est terminé. La fonction step s'arrête.
+      */
+      if(stack==NULL){return;}
+      /*
+	si en revanche la pile n'est pas vide, il faut alors 
+	évaluer la cloture en sommet de pile.
+      */
+      struct closure *arg1 = stack->closure;
+      stack = pop_stack(stack);
+      conf->closure = arg1;
+      conf->stack = NULL;
+      step(conf);
+      /*
+	Ici lorsque l'on n'avait que des opérations sur les entiers,
+	on vérifiait que le résultat était un entier avant de le stocker 
+	dans la variable k1. Si le résultat n'était pas un entier, le 
+	programme s'arrête parce que le type n'est pas compatible avec 
+	l'opération.
+
+	Maintenant que nous avons également des opération sur des listes,
+	il vaut mieux différer ce test et la récupération de la valeur
+	au moment où l'on connaît l'opétation.
+      */
+      
+      /*
+	Auparavant la seule opération unaire possible était NOT, maintenant, 
+	on a également TOP et NEXT. Il vaut donc mieux utiliser une structure 
+	switch. N'oubliez pas que l'élément de sommet de liste peut être une 
+	fonction qui doit s'évaluer avec le pile courante et que le calcul 
+	peut ne pas être terminé une fois que l'opération TOP a été effectuée.
+      */
+      struct expr * k1 = conf->closure->expr;
+      if(expr->expr->op==NOT){
+	if(conf->closure->expr->type!=NUM){exit(EXIT_FAILURE);}
+	k1->expr->num = !k1->expr->num;
+	return;
+      }
+
+      if(expr->expr->op==TOP){
+	if(conf->closure->expr->type!=CELL){exit(EXIT_FAILURE);}
+	k1 = k1->expr->cell.left;
+	conf->closure = mk_closure(k1,NULL);
+	return;
+      }
+
+      if(expr->expr->op==NEXT){
+	if(conf->closure->expr->type!=CELL){exit(EXIT_FAILURE);}
+	k1 = k1->expr->cell.right;
+	conf->closure = mk_closure(k1,NULL);
+	return;
+      }
+      /* 
+	 Si jamais l'opérateur est unaire et que l'on n'a qu'un seul argument 
+	 le calcul est terminé et la fonction step s'arrête
+      */
+      if(stack==NULL){return;}
+      arg1=conf->closure;
+      /* 
+	 Comme précédemment, si la pile n'est pas vide, on peut évaluer la 
+	 cloture de sommet de pile comme précédemment. 
+      */
+      struct closure *arg2 = stack->closure;
+      stack = pop_stack(stack);
+      conf->closure = arg2;
+      conf->stack=NULL;
+      step(conf);
+      /*
+	Ici encore, il vaut mieux différer le test du type
+	et le stockage de la valeur au moment où l'on teste
+	la valeur de l'opérateur.
+      */
+      struct expr *k2 = conf->closure->expr;
+      /*
+	Ici, on teste la valeur de l'opérateur dans le cas où il est binaire.
+	Il faut ici implémenter l'opération CONS. On veut pouvoir construire
+	des listes contenant n'importe quel type d'élément. Il n'est donc
+	pas utile de tester de type du permier argument  de la CONS, en 
+	revanche le second argument de CONS doit être une liste.
+      */
+      switch (expr->expr->op){
+      case PLUS: //printf("plus\n");
+	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}	conf->closure = mk_closure(mk_int(k1->expr->num+k2->expr->num),NULL);return;
+      case MINUS: //printf("minus\n");
+	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num-k2->expr->num),NULL);return;
+      case MULT: //printf("mult\n");
+	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num*k2->expr->num),NULL);return;
+      case DIV: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}assert(k2->expr->num!=0); conf->closure =  mk_closure(mk_int(k1->expr->num/k2->expr->num),NULL);return;
+      case LEQ: //printf("%d <= %d \n",k1,k2);
+	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num <= k2->expr->num),NULL); return;
+      case LE: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num < k2->expr->num),NULL); return;
+      case GEQ: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num >= k2->expr->num),NULL); return;
+      case GE: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num > k2->expr->num),NULL); return;
+      case EQ: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num == k2->expr->num),NULL); return;
+      case OR: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num || k2->expr->num),NULL); return;
+      case AND:if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);} conf->closure = mk_closure(mk_int(k1->expr->num && k2->expr->num),NULL); return;
+      case PUSH: if(conf->closure->expr->type==CELL){conf->closure = mk_closure(mk_cell(k1,k2),NULL);}
+	else if(conf->closure->expr->type == NIL){conf->closure = mk_closure(mk_cell(k1,k2->expr->cell.right),NULL);}
+	         else{exit(EXIT_FAILURE);}return;
+      default: assert(0);
+      }   
+    }
+    ;
   default: assert(0);
   }
 }
