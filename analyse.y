@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "machine.h"
-  // Test github
+  // Test github dans dessin
 struct env* ENV=NULL;
 struct configuration* CONF = NULL;
 
