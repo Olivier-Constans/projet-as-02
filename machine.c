@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -68,6 +67,51 @@ struct stack *push_stack(struct closure *cl, struct stack *stack){
   return st;
 }
 
+//--------------------------------------------------------------
+
+int elemStep(struct configuration *conf,struct cell *cell1,struct cell *cell2){
+  struct env *env = conf->closure->env;
+  struct configuration* CONF;
+  
+  if(cell1 == NULL || cell2 == NULL)
+    return 0;
+
+  if(cell1->left==NULL || cell2->left ==NULL){
+    if(cell1->left==NULL && cell2->left ==NULL)
+      return 1;
+    return 0;
+  }
+  struct cell *tabcell[2]={cell1,cell2};
+  int tabres[4]={NIL,0,NIL,0};
+  int i;
+  for(i=0;i<2;i++){
+    CONF= mk_conf(mk_closure(tabcell[i]->left,NULL));
+    step(CONF);
+    tabres[2*i]=CONF->closure->expr->type;
+    if((tabcell[i]->left->type == APP || tabcell[i]->left->type == ID)){
+      if(tabres[2*i]== NUM)
+	tabres[2*i+1]=CONF->closure->expr->expr->num;
+    }else{
+      if(tabres[2*i] == NUM)
+	tabres[2*i+1]=tabcell[i]->left->expr->num;
+    }
+  }
+  if(tabres[0]==tabres[2]){
+    if(tabres[0] == NUM && tabres[1] != tabres[3])
+      return 0;
+   
+    if(cell1->right == NULL && cell2->right == NULL)
+      return 1;
+    if(cell1->right == NULL || cell2->right == NULL)
+      return 0;
+     if(tabres[0] == CELL)
+      return elemStep(conf,&cell1->left->expr->cell,&cell2->left->expr->cell)  && elemStep(conf,&cell1->right->expr->cell,&cell2->right->expr->cell);
+    
+    return elemStep(conf,&cell1->right->expr->cell,&cell2->right->expr->cell);
+  }
+  return 0;
+}
+
 void step(struct configuration *conf){
   struct expr *expr = conf->closure->expr;
   struct env *env = conf->closure->env;
@@ -119,8 +163,16 @@ void step(struct configuration *conf){
     return;
   case CELL:
     return;
+  case POINT:
+    return;
+  case PATH:
+    return;
   case NIL:
     return;
+  case CIRCLE:
+    return;
+  case BEZIER:
+    return ;
   case OP: 
     {
       struct stack *stack = conf->stack;
@@ -208,18 +260,61 @@ void step(struct configuration *conf){
       */
       switch (expr->expr->op){
       case PLUS: //printf("plus\n");
-	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}	conf->closure = mk_closure(mk_int(k1->expr->num+k2->expr->num),NULL);return;
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);
+	}	
+	conf->closure = mk_closure(mk_int(k1->expr->num+k2->expr->num),NULL);
+	return;
       case MINUS: //printf("minus\n");
-	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num-k2->expr->num),NULL);return;
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);
+	}
+	conf->closure = mk_closure(mk_int(k1->expr->num-k2->expr->num),NULL);
+	return;
       case MULT: //printf("mult\n");
-	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num*k2->expr->num),NULL);return;
-      case DIV: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}assert(k2->expr->num!=0); conf->closure =  mk_closure(mk_int(k1->expr->num/k2->expr->num),NULL);return;
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);
+	}
+	conf->closure = mk_closure(mk_int(k1->expr->num*k2->expr->num),NULL);
+	return;
+      case DIV: 
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);}
+	assert(k2->expr->num!=0); 
+	conf->closure =  mk_closure(mk_int(k1->expr->num/k2->expr->num),NULL);
+	return;
       case LEQ: //printf("%d <= %d \n",k1,k2);
-	if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num <= k2->expr->num),NULL); return;
-      case LE: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num < k2->expr->num),NULL); return;
-      case GEQ: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num >= k2->expr->num),NULL); return;
-      case GE: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num > k2->expr->num),NULL); return;
-      case EQ: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num == k2->expr->num),NULL); return;
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);}
+	conf->closure = mk_closure(mk_int(k1->expr->num <= k2->expr->num),NULL);
+	return;
+      case LE: 
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);}
+	conf->closure = mk_closure(mk_int(k1->expr->num < k2->expr->num),NULL);
+	return;
+      case GEQ: 
+	if((k1->type!=NUM) || (k2->type!=NUM)){
+	  exit(EXIT_FAILURE);}
+	conf->closure = mk_closure(mk_int(k1->expr->num >= k2->expr->num),NULL); 
+	return;
+      case GE: 
+	if((k2->type!=NUM) || (k1->type!=NUM)){
+	  exit(EXIT_FAILURE);}
+	conf->closure = mk_closure(mk_int(k1->expr->num > k2->expr->num),NULL); 
+	return;
+      case EQ:
+	if((k1->type==NUM) && (k2->type==NUM)){
+	  conf->closure = mk_closure(mk_int(k1->expr->num == k2->expr->num),NULL);
+	}else{
+	  if((k1->type==CELL ||k1->type==NIL ) && (k2->type==CELL ||k2->type==NIL )){
+	    int test= elemStep(conf,&k1->expr->cell,&k2->expr->cell);
+	    conf->closure = mk_closure(mk_int(test),NULL);
+	}else{
+	    exit(EXIT_FAILURE);
+	}}
+	
+	return;
       case OR: if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);}conf->closure = mk_closure(mk_int(k1->expr->num || k2->expr->num),NULL); return;
       case AND:if((conf->closure->expr->type!=NUM) || (conf->closure->expr->type!=NUM)){exit(EXIT_FAILURE);} conf->closure = mk_closure(mk_int(k1->expr->num && k2->expr->num),NULL); return;
       case PUSH: if(conf->closure->expr->type==CELL){conf->closure = mk_closure(mk_cell(k1,k2),NULL);}

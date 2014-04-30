@@ -54,15 +54,41 @@ struct expr *mk_cond(struct expr *cond, struct expr *then_br, struct expr *else_
   e->expr->cond.else_br = else_br;
   return e;
 }
-
-struct expr* mk_cell(struct expr * left, struct expr * right){
+struct expr* mk_structcell(int type ,struct expr * left, struct expr * right){
    struct expr *e = mk_node();
-   if(left == NULL && right == NULL){
-     e->type =NIL;
-   }else{
-     e->type =CELL;
-   }
+   e->type = type;
    e->expr->cell.left = left;
    e->expr->cell.right = right;
    return e;
+}
+
+struct expr* mk_cell(struct expr * left, struct expr * right){
+   if(left == NULL && right == NULL){
+     return  mk_structcell(NIL,left,right);
+   }else{
+     return  mk_structcell(CELL,left,right);
+   }
+}
+
+struct expr* mk_point(struct expr* x, struct expr* y){
+  if(x->type!=NUM || y->type!=NUM)
+    exit(EXIT_FAILURE);
+  return mk_structcell(POINT,x,y);
+}
+
+struct expr* mk_path(struct expr * left, struct expr * right){
+  return mk_structcell(PATH ,left,right);
+}
+struct expr* mk_circle(struct expr * expr_centre, struct expr * expr_rayon){
+  return mk_structcell(CIRCLE,expr_centre,expr_rayon);
+}
+
+struct expr* mk_bezier(struct expr * p1, struct expr * p2,struct expr * p3, struct expr * p4){
+  struct expr *e = mk_node();
+  e->type = BEZIER;
+  e->expr->bezier.p1= p1;
+  e->expr->bezier.p2= p2;
+  e->expr->bezier.p3= p3;
+  e->expr->bezier.p4= p4;
+  return e;
 }

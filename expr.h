@@ -1,5 +1,5 @@
 
-enum expr_kind {ID, FUN, APP, NUM, OP, COND, CELL, NIL};
+enum expr_kind {ID, FUN, APP, NUM, OP, COND, CELL, NIL, POINT,PATH,CIRCLE,BEZIER};
 
 enum op{PLUS, MINUS, MULT, DIV, LEQ,  /* operations on NUM */
         LE, GEQ, GE, EQ, OR, AND, NOT, /* logical operations */
@@ -7,6 +7,16 @@ enum op{PLUS, MINUS, MULT, DIV, LEQ,  /* operations on NUM */
 };
 
 struct expr;
+
+struct path{
+  struct expr * left;
+  struct expr * right;
+};
+  
+struct point{
+  struct expr * x;
+  struct expr * y;
+};
 
 struct cell{
   struct expr * left;
@@ -29,6 +39,13 @@ struct cond{
   struct expr *else_br;
 };
 
+struct bezier{
+  struct expr* p1;
+  struct expr* p2;
+  struct expr* p3;
+  struct expr* p4;
+};
+
 union node{
   char *id;
   struct fun fun;
@@ -37,6 +54,7 @@ union node{
   int num;
   struct cond cond;
   struct cell cell;
+  struct bezier bezier;
 };
 
 struct expr{
@@ -52,3 +70,7 @@ struct expr *mk_op(enum op op);
 struct expr *mk_int(int k);
 struct expr *mk_cond(struct expr *cond, struct expr *then_br, struct expr *else_br);
 struct expr *mk_cell(struct expr * left, struct expr * right);
+struct expr* mk_point(struct expr* x, struct expr* y);
+struct expr* mk_path(struct expr * left, struct expr * right);
+struct expr* mk_circle(struct expr * left, struct expr * right);
+struct expr* mk_bezier(struct expr * p1, struct expr * p2,struct expr * p3, struct expr * p4);

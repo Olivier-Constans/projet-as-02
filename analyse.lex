@@ -17,7 +17,8 @@
 "::"           {return T_PUSH;}
 "pop"          {return T_TOP;}
 "tail"         {return T_NEXT;}
-
+"Cercle"       {return T_CERCLE;}
+"Bezier"       {return T_BEZIER;}
 
 
 
@@ -26,6 +27,8 @@
 [()]       {return yytext[0];}
 "["        {return T_CRO;}
 "]"        {return T_CRO2;}
+"{"        {return T_ACO;}
+"}"        {return T_ACO2;}
 ","        {return yytext[0];}
 
 "+"              {return T_PLUS;}
@@ -49,7 +52,7 @@
 ";"              {return FIN_EXPR;}
 
 [[:digit:]]+   {yylval.num=atoi(yytext);return T_NB;}
-[[:alpha:]]+   {yylval.id=strdup(yytext);return T_ID;}
+[[:alpha:]]([[:digit:]]|[[:alpha:]]|[_])*   {yylval.id=strdup(yytext);return T_ID;}
 
 [[:space:]]    {}
 
