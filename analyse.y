@@ -6,53 +6,47 @@
 #include <string.h>
 #include "machine.h"
 
-void printPath(struct cell c);
-void printlist(struct cell c);
-void printPoint(struct cell c);
-void printCircle(struct cell c);
-void printBezier(struct bezier b);
-
 struct env* ENV=NULL;
 struct configuration* CONF = NULL;
-int inttmp1=0;
-int inttmp2=0;
- void printResult(void){
+
+
+ void printlist(struct cell c);
+ void printResult(struct expr *expr);
+ void printPoint(struct expr* c);
+ void printPath(struct cell c);
+ void printCircle(struct cell c);
+ void printBezier(struct bezier b);
+
+ void printRESULT(struct expr *expr){
    printf(">>>>>");
+   printResult(expr);
+   printf("\n");
+ }
+
+ void printResult(struct expr *expr){
+   if(expr->type==CELL || expr->type==NIL){
+     printlist(expr->expr->cell);
+   }else{
+   CONF=mk_conf(mk_closure(expr,ENV)); 
+   step(CONF);
    if(CONF->closure->expr->type == NUM){
-     printf("%d",CONF->closure->expr->expr->num);}
-   if(CONF->closure->expr->type == CELL || CONF->closure->expr->type == NIL){
-     struct cell c = CONF->closure->expr->expr->cell;
-     printlist(c);
-   }		
+     printf("%d",CONF->closure->expr->expr->num);}  
+   if(CONF->closure->expr->type == FUN){
+     printf("FUN");
+   }
    if(CONF->closure->expr->type == POINT){
-     printPoint(CONF->closure->expr->expr->cell);
-     }
+     printPoint(CONF->closure->expr);
+   }
    if(CONF->closure->expr->type == PATH){
      printPath(CONF->closure->expr->expr->cell);
-     }
+   }
    if(CONF->closure->expr->type == CIRCLE){
      printCircle(CONF->closure->expr->expr->cell);
    }
    if(CONF->closure->expr->type == BEZIER){
      printBezier(CONF->closure->expr->expr->bezier);
    }
-   printf("\n");
- }
- void printBezier(struct bezier b){
-   printf("Bezier: ");
-   printPoint(b.p1->expr->cell);
-   printf(", ");
-   printPoint(b.p2->expr->cell);
-   printf(", ");
-   printPoint(b.p3->expr->cell);
-   printf(", ");
-   printPoint(b.p4->expr->cell);
- }
-
- void printCircle(struct cell c){
-   printf("Cercle: centre= ");
-   printPoint(c.left->expr->cell);
-   printf(" ,rayon= %d ",c.right->expr->num );
+   }
  }
 
  void printlist(struct cell c){
@@ -60,68 +54,76 @@ int inttmp2=0;
    printf("[ ");
    while(tmp != NULL){
      if(tmp->left == NULL){
-       printf("NIL "); 
+       printf("NIL ]");
+       return;
      }
      else{
-       if(tmp->left->type == APP ||tmp->left->type == ID){
-	 struct configuration* conf =mk_conf(mk_closure(tmp->left,ENV)); 			
-         step(conf); 										
-	 if(conf->closure->expr->type == NUM){
-	   printf("%d ",conf->closure->expr->expr->num);}
-	 if(conf->closure->expr->type == FUN){
-	   printf("FUN ");} 
-	 if(conf->closure->expr->type == CELL || conf->closure->expr->type == NIL){
-	   struct cell c = conf->closure->expr->expr->cell;
-	   printlist(c);
-	 }
-       }
-       if(tmp->left->type == FUN ){
-	 printf("FUN ");
-       }
-       if(tmp->left->type == NUM)
-	 printf("%d ",tmp->left->expr->num);
-       if(tmp->left->type == CELL)
-	 printlist(tmp->left->expr->cell);
-       if(tmp->left->type == NIL){
-	 printf("NIL ");
-	 break;
-       }
+       printResult(tmp->left);
      }
      if(tmp->right == NULL)
        break;
+     printf(",");
      tmp = &tmp->right->expr->cell;
-    
    }
    printf("] "); 
  }
+void printPoint(struct expr* c){
+   if(c->type ==ID){
+     struct configuration* conf =mk_conf(mk_closure(c,ENV)); 			
+       step(conf); 
+       if(conf->closure->expr->type != POINT){
+	 exit(EXIT_FAILURE);
+       }
+       printPoint(conf->closure->expr);
+   }else{
 
- void printPoint(struct cell c){
-    printf("{%d,%d}", c.left->expr->num,c.right->expr->num);
+   int x;
+   int y;
+   CONF=mk_conf(mk_closure(c->expr->cell.left,ENV)); 
+   step(CONF);
+   if(CONF->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   x=CONF->closure->expr->expr->num;
+   CONF=mk_conf(mk_closure(c->expr->cell.right,ENV)); 
+   step(CONF);
+   if(CONF->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   y=CONF->closure->expr->expr->num;
+
+  printf("{%d,%d}",x,y);
  }
- 
+}
+
  void printPath(struct cell c){
    struct cell *tmp= &c;
    while(tmp != NULL){
      if(tmp->left->type != POINT && tmp->left->type != ID){
        exit(EXIT_FAILURE);
      }
-     if(tmp->left->type==ID){
-       struct configuration* conf =mk_conf(mk_closure(tmp->left,ENV)); 			
-       step(conf); 
-       if(conf->closure->expr->type != POINT){
-	 exit(EXIT_FAILURE);
-       }
-       printPoint(conf->closure->expr->expr->cell);
-     }else{
-       printPoint(tmp->left->expr->cell);
-     }
+     printPoint(tmp->left);
      if(tmp->right == NULL)
        break;
      printf("--");
      tmp = &tmp->right->expr->cell;
-     
    }
-   }
+ }
+
+ void printCircle(struct cell c){
+   printf("Cercle: centre= ");
+   printPoint(c.left);
+   printf(" ,rayon= %d ",c.right->expr->num );
+ }
+
+ void printBezier(struct bezier b){
+   printf("Bezier: ");
+   printPoint(b.p1);
+   printf(", ");
+   printPoint(b.p2);
+   printf(", ");
+   printPoint(b.p3);
+   printf(", ");
+   printPoint(b.p4);
+ }
 
 %}
 
@@ -170,7 +172,7 @@ int inttmp2=0;
 
 %token T_CERCLE
 %token T_BEZIER
-
+%token T_TRANSLATION
 %type <e>s
 %type <e>expr
 
@@ -178,11 +180,15 @@ int inttmp2=0;
 %type <e>paraappfun
 %type <e>conslist
 %type <e>liste
+
 %type <e>point
 %type <e>path
 %type <e>circle
 %type <e>bezier
 %type <e>dessin
+%type <e>porid
+%type <e>translation
+
 
 %right FLECHE  ELSE
 %right T_EQ
@@ -208,16 +214,12 @@ int inttmp2=0;
 %%
 lign:    
 /*empty*/
-| lign s[exp]  FIN_EXPR       {CONF=mk_conf(mk_closure($exp,ENV)); 
-                               step(CONF);
-                               printResult();}
+| lign s[exp]  FIN_EXPR       {printRESULT($exp) ;}	
 
 | lign LET T_ID[id] T_AF s[exp1] FIN_EXPR    {ENV = push_rec_env($id,$exp1,ENV);
-                                              CONF=mk_conf(mk_closure($exp1,ENV)); 
-                                              step(CONF); 
-					      printResult();}
-
-| lign FIN_EXPR				      //permet de traiter le cas sans expression
+                                              printRESULT($exp1);}	
+//permet de traiter le cas sans expression
+| lign FIN_EXPR					
 ;
 
 s:
@@ -233,11 +235,13 @@ expr {$$ = $1;}
 ;
 
 dessin:
-point           {$$ = $1;}
+point       {$$ = $1;}
 |path           {$$ = $1;}
 |circle         {$$ = $1;}
 |bezier         {$$ = $1;}
+|translation    {$$ = $1;}
 ;
+
 expr:
 // Nombre ou identifiant
 T_NB                      {$$=mk_int($1);}													
@@ -301,51 +305,44 @@ T_CRO conslist[list] T_CRO2  {$$ = $list;}
 |T_CRO T_CRO2 {$$ = mk_cell(NULL,NULL);}
 ;
 
-point:
-T_ACO expr[x] ',' expr[y] T_ACO2    {CONF=mk_conf(mk_closure($x,ENV)); 					                                  step(CONF);
-                                     if(CONF->closure->expr->type != NUM)
-				       exit(EXIT_FAILURE);
-				     inttmp1=CONF->closure->expr->expr->num;
-                                     CONF=mk_conf(mk_closure($y,ENV)); 					                                  step(CONF);
-                                     if(CONF->closure->expr->type != NUM)
-				       exit(EXIT_FAILURE);
-				     inttmp2=CONF->closure->expr->expr->num;
-                                     $$= mk_point(mk_int(inttmp1),mk_int(inttmp2));}
-;
-
-path:
-point[p1] T_MINUS path[tpath]                     {$$= mk_path($p1,$tpath);}
-|T_ID[p1] T_MINUS path[tpath]                     {CONF=mk_conf(mk_closure(mk_id($p1),ENV)); 					                                step(CONF);
-                                                   if(CONF->closure->expr->type != POINT)
-				                     exit(EXIT_FAILURE);
-                                                   $$= mk_path(mk_id($p1),$tpath);}
-
-| T_MINUS point[pi] T_MINUS  path[tpath]          {$$= mk_path($pi,$tpath);} 
-| T_MINUS T_ID[pi] T_MINUS  path[tpath]           {CONF=mk_conf(mk_closure(mk_id($pi),ENV)); 					                        step(CONF);
-                                                   if(CONF->closure->expr->type != POINT)
-				                     exit(EXIT_FAILURE);
-                                                   $$= mk_path(mk_id($pi),$tpath);}
-
-| T_MINUS point[pn]                               {$$= mk_path($pn,NULL);}
-| T_MINUS T_ID[pn]                                {CONF=mk_conf(mk_closure(mk_id($pn),ENV)); 					                        step(CONF);
-                                                   if(CONF->closure->expr->type != POINT)
-				                     exit(EXIT_FAILURE);
-						   $$= mk_path(mk_id($pn),NULL);}
-;
-circle:
-T_CERCLE '(' point[p] ',' expr[vec] ')'           {$$=mk_circle($p,$vec);}
-;
-
-bezier:
-T_BEZIER '('point[p1] ','point[p2] ','point[p3] ','point[p4] ')' {$$=mk_bezier($p1,$p2,$p3,$p4);}
-;
-
 conslist:
 expr[exp1]','conslist[list] {$$ = mk_cell($exp1,$list);}
 |liste[exp1]','conslist[list] {$$ = mk_cell($exp1,$list);}
 | expr    {$$ = mk_cell($1,NULL);} 
 | liste  {$$ = mk_cell($1,NULL);} 
 ;
+
+
+point:
+T_ACO expr[x] ',' expr[y] T_ACO2    {$$= mk_point($x,$y);}
+;
+
+path:
+point[p1] T_MINUS path[tpath]                     {$$= mk_path($p1,$tpath);}
+|T_ID[p1] T_MINUS path[tpath]                     {$$= mk_path(mk_id($p1),$tpath);}
+
+| T_MINUS point[pi] T_MINUS  path[tpath]          {$$= mk_path($pi,$tpath);} 
+| T_MINUS T_ID[pi] T_MINUS  path[tpath]           {$$= mk_path(mk_id($pi),$tpath);}
+
+| T_MINUS point[pn]                               {$$= mk_path($pn,NULL);}
+| T_MINUS T_ID[pn]                                {$$= mk_path(mk_id($pn),NULL);}
+;
+circle:
+T_CERCLE '(' point[p] ',' expr[vec] ')'           {$$=mk_circle($p,$vec);}
+|T_CERCLE '(' T_ID[p] ',' expr[vec] ')'           {$$=mk_circle(mk_id($p),$vec);}
+;
+translation:
+T_TRANSLATION '(' dessin[d] ',' porid[vec] ')'            {$$=mk_app(mk_app(mk_op(TRANS),$d),$vec);}
+|T_TRANSLATION '(' T_ID[d] ',' porid[vec] ')'            {$$=mk_app(mk_app(mk_op(TRANS),mk_id($d)),$vec);}
+bezier:
+T_BEZIER '('porid[p1] ',' porid[p2] ','porid[p3] ','porid[p4] ')' {$$=mk_bezier($p1,$p2,$p3,$p4);}
+;
+
+porid:
+point          {$$=$1;}
+| T_ID         {$$=mk_id($1);}
+;
+
 %%
 
 int main(int argc, char *argv[])

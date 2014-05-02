@@ -1,9 +1,10 @@
 
-enum expr_kind {ID, FUN, APP, NUM, OP, COND, CELL, NIL, POINT,PATH,CIRCLE,BEZIER};
+enum expr_kind {ID, FUN, APP, NUM, OP, COND, CELL, NIL, POINT, PATH, CIRCLE, BEZIER};
 
 enum op{PLUS, MINUS, MULT, DIV, LEQ,  /* operations on NUM */
         LE, GEQ, GE, EQ, OR, AND, NOT, /* logical operations */
-        TOP, NEXT, PUSH /* operations on list */
+        TOP, NEXT, PUSH, /* operations on list */
+	TRANS, HOMO, ROT  
 };
 
 struct expr;

@@ -71,8 +71,6 @@ struct expr* mk_cell(struct expr * left, struct expr * right){
 }
 
 struct expr* mk_point(struct expr* x, struct expr* y){
-  if(x->type!=NUM || y->type!=NUM)
-    exit(EXIT_FAILURE);
   return mk_structcell(POINT,x,y);
 }
 

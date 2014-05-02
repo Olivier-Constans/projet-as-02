@@ -69,7 +69,60 @@ struct stack *push_stack(struct closure *cl, struct stack *stack){
 
 //--------------------------------------------------------------
 
+struct expr* translation(struct configuration *conf,struct expr f,struct cell* vec){
+  struct env *env = conf->closure->env; 
+  int x;
+  int y;
+  int xvec;
+  int yvec;
+  switch(f.type){
+  case POINT:
+
+   conf=mk_conf(mk_closure(f.expr->cell.left,env)); 
+   step(conf);
+   if(conf->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   x=conf->closure->expr->expr->num;
+   conf=mk_conf(mk_closure(f.expr->cell.right,env)); 
+   step(conf);
+   if(conf->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   y=conf->closure->expr->expr->num;
+
+   conf=mk_conf(mk_closure(vec->left,env)); 
+   step(conf);
+   if(conf->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   xvec=conf->closure->expr->expr->num;
+   conf=mk_conf(mk_closure(vec->right,env)); 
+   step(conf);
+   if(conf->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   yvec=conf->closure->expr->expr->num;
+
+   return mk_point(mk_int(x+xvec),mk_int(y+yvec));
+
+  case CIRCLE:
+    return mk_circle(translation(conf,*f.expr->cell.left,vec),f.expr->cell.right);
+  case PATH:
+    if(f.expr->cell.right == NULL)
+      return mk_path(translation(conf,*f.expr->cell.left,vec),NULL);
+    return mk_path(translation(conf,*f.expr->cell.left,vec),translation(conf,*f.expr->cell.right,vec));
+   
+    
+  case BEZIER:
+    return mk_bezier(translation(conf,*f.expr->bezier.p1,vec),translation(conf,*f.expr->bezier.p2,vec),translation(conf,*f.expr->bezier.p3,vec),translation(conf,*f.expr->bezier.p4,vec));
+  case ID:
+    conf =mk_conf(mk_closure(&f,env)); 
+    step(conf);
+    return translation(conf,*conf->closure->expr,vec);
+  default: assert(0);
+  }
+}
+
+
 int elemStep(struct configuration *conf,struct cell *cell1,struct cell *cell2){
+  printf("debut\n");
   struct env *env = conf->closure->env;
   struct configuration* CONF;
   
@@ -162,12 +215,13 @@ void step(struct configuration *conf){
   case NUM: 
     return;
   case CELL:
-    return;
+    conf->closure = mk_closure(expr->expr->cell.left,env);
+    return ;
+  case NIL:
+    return ;
   case POINT:
     return;
   case PATH:
-    return;
-  case NIL:
     return;
   case CIRCLE:
     return;
@@ -259,6 +313,9 @@ void step(struct configuration *conf){
 	revanche le second argument de CONS doit être une liste.
       */
       switch (expr->expr->op){
+      case TRANS:
+	conf->closure=mk_closure(translation(conf,*k1,&k2->expr->cell),NULL);
+	return ;
       case PLUS: //printf("plus\n");
 	if((k1->type!=NUM) || (k2->type!=NUM)){
 	  exit(EXIT_FAILURE);

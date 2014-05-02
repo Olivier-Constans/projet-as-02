@@ -19,7 +19,7 @@
 "tail"         {return T_NEXT;}
 "Cercle"       {return T_CERCLE;}
 "Bezier"       {return T_BEZIER;}
-
+"translation"  {return T_TRANSLATION;}
 
 
 \/\/.*          {ECHO;printf("\n");}
