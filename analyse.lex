@@ -15,12 +15,15 @@
 "where"|"WHERE" {return WHERE;}
 "fun"          {return T_FUN;}
 "::"           {return T_PUSH;}
-"pop"          {return T_TOP;}
-"tail"         {return T_NEXT;}
-"Cercle"       {return T_CERCLE;}
-"Bezier"       {return T_BEZIER;}
-"translation"  {return T_TRANSLATION;}
+"pop"|"POP"          {return T_TOP;}
+"tail"|"TAIL"         {return T_NEXT;}
 
+"Cercle"|"cercle"|"CERCLE"                 {return T_CERCLE;}
+"Bezier"|"bezier"|"BEZIER"                 {return T_BEZIER;}
+
+"Translation"|"translation"|"TRANSLATION"  {return T_TRANSLATION;}
+"Rotation"|"rotation"|"ROTATION"           {return T_ROTATION;}
+"Homothetie"|"HOMOTHETIE"|"homothetie"     {return T_HOMOTHETIE;}
 
 \/\/.*          {ECHO;printf("\n");}
 

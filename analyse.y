@@ -172,7 +172,11 @@ void printPoint(struct expr* c){
 
 %token T_CERCLE
 %token T_BEZIER
+
 %token T_TRANSLATION
+%token T_ROTATION
+%token T_HOMOTHETIE
+
 %type <e>s
 %type <e>expr
 
@@ -187,8 +191,10 @@ void printPoint(struct expr* c){
 %type <e>bezier
 %type <e>dessin
 %type <e>porid
-%type <e>translation
 
+%type <e>translation
+%type <e>rotation
+%type <e>homothetie
 
 %right FLECHE  ELSE
 %right T_EQ
@@ -240,6 +246,8 @@ point       {$$ = $1;}
 |circle         {$$ = $1;}
 |bezier         {$$ = $1;}
 |translation    {$$ = $1;}
+|rotation       {$$ = $1;}
+|homothetie     {$$ = $1;}
 ;
 
 expr:
@@ -331,9 +339,21 @@ circle:
 T_CERCLE '(' point[p] ',' expr[vec] ')'           {$$=mk_circle($p,$vec);}
 |T_CERCLE '(' T_ID[p] ',' expr[vec] ')'           {$$=mk_circle(mk_id($p),$vec);}
 ;
+
 translation:
 T_TRANSLATION '(' dessin[d] ',' porid[vec] ')'            {$$=mk_app(mk_app(mk_op(TRANS),$d),$vec);}
 |T_TRANSLATION '(' T_ID[d] ',' porid[vec] ')'            {$$=mk_app(mk_app(mk_op(TRANS),mk_id($d)),$vec);}
+
+rotation:
+T_ROTATION '(' dessin[d] ',' porid[c] ',' expr[ang] ')' {$$=mk_app(mk_app(mk_app(mk_op(ROT),$d),$c),$ang);}
+|T_ROTATION '(' T_ID[d] ',' porid[c] ',' expr[ang] ')'  {$$=mk_app(mk_app(mk_app(mk_op(ROT),mk_id($d)),$c),$ang);}
+;
+
+homothetie:
+T_HOMOTHETIE '(' dessin[d] ',' porid[c] ',' expr[ratio] ')' {$$=mk_app(mk_app(mk_app(mk_op(HOMO),$d),$c),$ratio);}
+|T_HOMOTHETIE '(' T_ID[d] ',' porid[c] ',' expr[ratio] ')' {$$=mk_app(mk_app(mk_app(mk_op(HOMO),mk_id($d)),$c),$ratio);}
+;
+
 bezier:
 T_BEZIER '('porid[p1] ',' porid[p2] ','porid[p3] ','porid[p4] ')' {$$=mk_bezier($p1,$p2,$p3,$p4);}
 ;

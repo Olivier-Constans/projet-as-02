@@ -1,0 +1,2917 @@
+Grammaire
+
+    0 $accept: lign $end
+
+    1 lign: %empty
+    2     | lign s FIN_EXPR
+    3     | lign LET T_ID T_AF s FIN_EXPR
+    4     | lign FIN_EXPR
+
+    5 s: expr
+    6  | liste
+    7  | s T_PUSH T_ID
+    8  | s T_PUSH liste
+    9  | T_TOP liste
+   10  | T_TOP T_ID
+   11  | T_NEXT liste
+   12  | T_NEXT T_ID
+   13  | dessin
+
+   14 dessin: point
+   15       | path
+   16       | circle
+   17       | bezier
+   18       | translation
+   19       | rotation
+   20       | homothetie
+
+   21 expr: T_NB
+   22     | T_ID
+   23     | expr T_PLUS expr
+   24     | expr T_MINUS expr
+   25     | expr T_DIV expr
+   26     | expr T_MULT expr
+   27     | '(' T_MINUS expr ')'
+   28     | expr T_LEQ expr
+   29     | expr T_LE expr
+   30     | expr T_GEQ expr
+   31     | expr T_GE expr
+   32     | expr T_EQ expr
+   33     | liste T_EQ liste
+   34     | expr T_NEQ expr
+   35     | expr T_OR expr
+   36     | expr T_AND expr
+   37     | T_NOT expr
+   38     | T_FUN paradeffun
+   39     | IF expr THEN expr ELSE expr
+   40     | expr WHERE T_ID T_AF expr
+   41     | LET T_ID T_AF expr IN expr
+   42     | '(' paraappfun ')'
+   43     | '(' expr ')'
+
+   44 paradeffun: T_ID paradeffun
+   45           | T_ID FLECHE expr
+
+   46 paraappfun: paraappfun expr
+   47           | expr expr
+
+   48 liste: T_CRO conslist T_CRO2
+   49      | T_CRO T_CRO2
+
+   50 conslist: expr ',' conslist
+   51         | liste ',' conslist
+   52         | expr
+   53         | liste
+
+   54 point: T_ACO expr ',' expr T_ACO2
+
+   55 path: point T_MINUS path
+   56     | T_ID T_MINUS path
+   57     | T_MINUS point T_MINUS path
+   58     | T_MINUS T_ID T_MINUS path
+   59     | T_MINUS point
+   60     | T_MINUS T_ID
+
+   61 circle: T_CERCLE '(' point ',' expr ')'
+   62       | T_CERCLE '(' T_ID ',' expr ')'
+
+   63 translation: T_TRANSLATION '(' dessin ',' porid ')'
+   64            | T_TRANSLATION '(' T_ID ',' porid ')'
+
+   65 rotation: T_ROTATION '(' dessin ',' porid ',' expr ')'
+   66         | T_ROTATION '(' T_ID ',' porid ',' expr ')'
+
+   67 homothetie: T_HOMOTHETIE '(' dessin ',' porid ',' expr ')'
+   68           | T_HOMOTHETIE '(' T_ID ',' porid ',' expr ')'
+
+   69 bezier: T_BEZIER '(' porid ',' porid ',' porid ',' porid ')'
+
+   70 porid: point
+   71      | T_ID
+
+
+Terminaux, suivis des règles où ils apparaissent
+
+$end (0) 0
+'(' (40) 27 42 43 61 62 63 64 65 66 67 68 69
+')' (41) 27 42 43 61 62 63 64 65 66 67 68 69
+',' (44) 50 51 54 61 62 63 64 65 66 67 68 69
+error (256)
+T_NB (258) 21
+T_ID (259) 3 7 10 12 22 40 41 44 45 56 58 60 62 64 66 68 71
+FIN_EXPR (260) 2 3 4
+IF (261) 39
+ELSE (262) 39
+THEN (263) 39
+FLECHE (264) 45
+LET (265) 3 41
+T_AF (266) 3 40 41
+T_FUN (267) 38
+T_PLUS (268) 23
+T_MINUS (269) 24 27 55 56 57 58 59 60
+T_DIV (270) 25
+T_MULT (271) 26
+T_LEQ (272) 28
+T_LE (273) 29
+T_GE (274) 31
+T_GEQ (275) 30
+T_EQ (276) 32 33
+T_NEQ (277) 34
+T_OR (278) 35
+T_AND (279) 36
+T_NOT (280) 37
+WHERE (281) 40
+IN (282) 41
+T_PUSH (283) 7 8
+T_TOP (284) 9 10
+T_NEXT (285) 11 12
+T_CRO (286) 48 49
+T_CRO2 (287) 48 49
+T_ACO (288) 54
+T_ACO2 (289) 54
+T_CERCLE (290) 61 62
+T_BEZIER (291) 69
+T_TRANSLATION (292) 63 64
+T_ROTATION (293) 65 66
+T_HOMOTHETIE (294) 67 68
+T_M (295)
+T_APP (296)
+
+
+Non-terminaux, suivis des règles où ils apparaissent
+
+$accept (45)
+    à gauche: 0
+lign (46)
+    à gauche: 1 2 3 4, à droite: 0 2 3 4
+s (47)
+    à gauche: 5 6 7 8 9 10 11 12 13, à droite: 2 3 7 8
+dessin (48)
+    à gauche: 14 15 16 17 18 19 20, à droite: 13 63 65 67
+expr (49)
+    à gauche: 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
+    39 40 41 42 43, à droite: 5 23 24 25 26 27 28 29 30 31 32 34 35
+    36 37 39 40 41 43 45 46 47 50 52 54 61 62 65 66 67 68
+paradeffun (50)
+    à gauche: 44 45, à droite: 38 44
+paraappfun (51)
+    à gauche: 46 47, à droite: 42 46
+liste (52)
+    à gauche: 48 49, à droite: 6 8 9 11 33 51 53
+conslist (53)
+    à gauche: 50 51 52 53, à droite: 48 50 51
+point (54)
+    à gauche: 54, à droite: 14 55 57 59 61 70
+path (55)
+    à gauche: 55 56 57 58 59 60, à droite: 15 55 56 57 58
+circle (56)
+    à gauche: 61 62, à droite: 16
+translation (57)
+    à gauche: 63 64, à droite: 18
+rotation (58)
+    à gauche: 65 66, à droite: 19
+homothetie (59)
+    à gauche: 67 68, à droite: 20
+bezier (60)
+    à gauche: 69, à droite: 17
+porid (61)
+    à gauche: 70 71, à droite: 63 64 65 66 67 68 69
+
+
+État 0
+
+    0 $accept: . lign $end
+
+    $défaut  réduction par utilisation de la règle 1 (lign)
+
+    lign  aller à l'état 1
+
+
+État 1
+
+    0 $accept: lign . $end
+    2 lign: lign . s FIN_EXPR
+    3     | lign . LET T_ID T_AF s FIN_EXPR
+    4     | lign . FIN_EXPR
+
+    $end           décalage et aller à l'état 2
+    T_NB           décalage et aller à l'état 3
+    T_ID           décalage et aller à l'état 4
+    FIN_EXPR       décalage et aller à l'état 5
+    IF             décalage et aller à l'état 6
+    LET            décalage et aller à l'état 7
+    T_FUN          décalage et aller à l'état 8
+    T_MINUS        décalage et aller à l'état 9
+    T_NOT          décalage et aller à l'état 10
+    T_TOP          décalage et aller à l'état 11
+    T_NEXT         décalage et aller à l'état 12
+    T_CRO          décalage et aller à l'état 13
+    T_ACO          décalage et aller à l'état 14
+    T_CERCLE       décalage et aller à l'état 15
+    T_BEZIER       décalage et aller à l'état 16
+    T_TRANSLATION  décalage et aller à l'état 17
+    T_ROTATION     décalage et aller à l'état 18
+    T_HOMOTHETIE   décalage et aller à l'état 19
+    '('            décalage et aller à l'état 20
+
+    s            aller à l'état 21
+    dessin       aller à l'état 22
+    expr         aller à l'état 23
+    liste        aller à l'état 24
+    point        aller à l'état 25
+    path         aller à l'état 26
+    circle       aller à l'état 27
+    translation  aller à l'état 28
+    rotation     aller à l'état 29
+    homothetie   aller à l'état 30
+    bezier       aller à l'état 31
+
+
+État 2
+
+    0 $accept: lign $end .
+
+    $défaut  accepter
+
+
+État 3
+
+   21 expr: T_NB .
+
+    $défaut  réduction par utilisation de la règle 21 (expr)
+
+
+État 4
+
+   22 expr: T_ID .
+   56 path: T_ID . T_MINUS path
+
+    T_MINUS  décalage et aller à l'état 32
+
+    $défaut  réduction par utilisation de la règle 22 (expr)
+
+
+État 5
+
+    4 lign: lign FIN_EXPR .
+
+    $défaut  réduction par utilisation de la règle 4 (lign)
+
+
+État 6
+
+   39 expr: IF . expr THEN expr ELSE expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 35
+    liste  aller à l'état 36
+
+
+État 7
+
+    3 lign: lign LET . T_ID T_AF s FIN_EXPR
+   41 expr: LET . T_ID T_AF expr IN expr
+
+    T_ID  décalage et aller à l'état 37
+
+
+État 8
+
+   38 expr: T_FUN . paradeffun
+
+    T_ID  décalage et aller à l'état 38
+
+    paradeffun  aller à l'état 39
+
+
+État 9
+
+   57 path: T_MINUS . point T_MINUS path
+   58     | T_MINUS . T_ID T_MINUS path
+   59     | T_MINUS . point
+   60     | T_MINUS . T_ID
+
+    T_ID   décalage et aller à l'état 40
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 41
+
+
+État 10
+
+   37 expr: T_NOT . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 42
+    liste  aller à l'état 36
+
+
+État 11
+
+    9 s: T_TOP . liste
+   10  | T_TOP . T_ID
+
+    T_ID   décalage et aller à l'état 43
+    T_CRO  décalage et aller à l'état 13
+
+    liste  aller à l'état 44
+
+
+État 12
+
+   11 s: T_NEXT . liste
+   12  | T_NEXT . T_ID
+
+    T_ID   décalage et aller à l'état 45
+    T_CRO  décalage et aller à l'état 13
+
+    liste  aller à l'état 46
+
+
+État 13
+
+   48 liste: T_CRO . conslist T_CRO2
+   49      | T_CRO . T_CRO2
+
+    T_NB    décalage et aller à l'état 3
+    T_ID    décalage et aller à l'état 33
+    IF      décalage et aller à l'état 6
+    LET     décalage et aller à l'état 34
+    T_FUN   décalage et aller à l'état 8
+    T_NOT   décalage et aller à l'état 10
+    T_CRO   décalage et aller à l'état 13
+    T_CRO2  décalage et aller à l'état 47
+    '('     décalage et aller à l'état 20
+
+    expr      aller à l'état 48
+    liste     aller à l'état 49
+    conslist  aller à l'état 50
+
+
+État 14
+
+   54 point: T_ACO . expr ',' expr T_ACO2
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 51
+    liste  aller à l'état 36
+
+
+État 15
+
+   61 circle: T_CERCLE . '(' point ',' expr ')'
+   62       | T_CERCLE . '(' T_ID ',' expr ')'
+
+    '('  décalage et aller à l'état 52
+
+
+État 16
+
+   69 bezier: T_BEZIER . '(' porid ',' porid ',' porid ',' porid ')'
+
+    '('  décalage et aller à l'état 53
+
+
+État 17
+
+   63 translation: T_TRANSLATION . '(' dessin ',' porid ')'
+   64            | T_TRANSLATION . '(' T_ID ',' porid ')'
+
+    '('  décalage et aller à l'état 54
+
+
+État 18
+
+   65 rotation: T_ROTATION . '(' dessin ',' porid ',' expr ')'
+   66         | T_ROTATION . '(' T_ID ',' porid ',' expr ')'
+
+    '('  décalage et aller à l'état 55
+
+
+État 19
+
+   67 homothetie: T_HOMOTHETIE . '(' dessin ',' porid ',' expr ')'
+   68           | T_HOMOTHETIE . '(' T_ID ',' porid ',' expr ')'
+
+    '('  décalage et aller à l'état 56
+
+
+État 20
+
+   27 expr: '(' . T_MINUS expr ')'
+   42     | '(' . paraappfun ')'
+   43     | '(' . expr ')'
+
+    T_NB     décalage et aller à l'état 3
+    T_ID     décalage et aller à l'état 33
+    IF       décalage et aller à l'état 6
+    LET      décalage et aller à l'état 34
+    T_FUN    décalage et aller à l'état 8
+    T_MINUS  décalage et aller à l'état 57
+    T_NOT    décalage et aller à l'état 10
+    T_CRO    décalage et aller à l'état 13
+    '('      décalage et aller à l'état 20
+
+    expr        aller à l'état 58
+    paraappfun  aller à l'état 59
+    liste       aller à l'état 36
+
+
+État 21
+
+    2 lign: lign s . FIN_EXPR
+    7 s: s . T_PUSH T_ID
+    8  | s . T_PUSH liste
+
+    FIN_EXPR  décalage et aller à l'état 60
+    T_PUSH    décalage et aller à l'état 61
+
+
+État 22
+
+   13 s: dessin .
+
+    $défaut  réduction par utilisation de la règle 13 (s)
+
+
+État 23
+
+    5 s: expr .
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 5 (s)
+
+
+État 24
+
+    6 s: liste .
+   33 expr: liste . T_EQ liste
+
+    T_EQ  décalage et aller à l'état 75
+
+    $défaut  réduction par utilisation de la règle 6 (s)
+
+
+État 25
+
+   14 dessin: point .
+   55 path: point . T_MINUS path
+
+    T_MINUS  décalage et aller à l'état 76
+
+    $défaut  réduction par utilisation de la règle 14 (dessin)
+
+
+État 26
+
+   15 dessin: path .
+
+    $défaut  réduction par utilisation de la règle 15 (dessin)
+
+
+État 27
+
+   16 dessin: circle .
+
+    $défaut  réduction par utilisation de la règle 16 (dessin)
+
+
+État 28
+
+   18 dessin: translation .
+
+    $défaut  réduction par utilisation de la règle 18 (dessin)
+
+
+État 29
+
+   19 dessin: rotation .
+
+    $défaut  réduction par utilisation de la règle 19 (dessin)
+
+
+État 30
+
+   20 dessin: homothetie .
+
+    $défaut  réduction par utilisation de la règle 20 (dessin)
+
+
+État 31
+
+   17 dessin: bezier .
+
+    $défaut  réduction par utilisation de la règle 17 (dessin)
+
+
+État 32
+
+   56 path: T_ID T_MINUS . path
+
+    T_ID     décalage et aller à l'état 77
+    T_MINUS  décalage et aller à l'état 9
+    T_ACO    décalage et aller à l'état 14
+
+    point  aller à l'état 78
+    path   aller à l'état 79
+
+
+État 33
+
+   22 expr: T_ID .
+
+    $défaut  réduction par utilisation de la règle 22 (expr)
+
+
+État 34
+
+   41 expr: LET . T_ID T_AF expr IN expr
+
+    T_ID  décalage et aller à l'état 80
+
+
+État 35
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   39     | IF expr . THEN expr ELSE expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    THEN     décalage et aller à l'état 81
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+
+État 36
+
+   33 expr: liste . T_EQ liste
+
+    T_EQ  décalage et aller à l'état 75
+
+
+État 37
+
+    3 lign: lign LET T_ID . T_AF s FIN_EXPR
+   41 expr: LET T_ID . T_AF expr IN expr
+
+    T_AF  décalage et aller à l'état 82
+
+
+État 38
+
+   44 paradeffun: T_ID . paradeffun
+   45           | T_ID . FLECHE expr
+
+    T_ID    décalage et aller à l'état 38
+    FLECHE  décalage et aller à l'état 83
+
+    paradeffun  aller à l'état 84
+
+
+État 39
+
+   38 expr: T_FUN paradeffun .
+
+    $défaut  réduction par utilisation de la règle 38 (expr)
+
+
+État 40
+
+   58 path: T_MINUS T_ID . T_MINUS path
+   60     | T_MINUS T_ID .
+
+    T_MINUS  décalage et aller à l'état 85
+
+    $défaut  réduction par utilisation de la règle 60 (path)
+
+
+État 41
+
+   57 path: T_MINUS point . T_MINUS path
+   59     | T_MINUS point .
+
+    T_MINUS  décalage et aller à l'état 86
+
+    $défaut  réduction par utilisation de la règle 59 (path)
+
+
+État 42
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   37     | T_NOT expr .
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 37 (expr)
+
+
+État 43
+
+   10 s: T_TOP T_ID .
+
+    $défaut  réduction par utilisation de la règle 10 (s)
+
+
+État 44
+
+    9 s: T_TOP liste .
+
+    $défaut  réduction par utilisation de la règle 9 (s)
+
+
+État 45
+
+   12 s: T_NEXT T_ID .
+
+    $défaut  réduction par utilisation de la règle 12 (s)
+
+
+État 46
+
+   11 s: T_NEXT liste .
+
+    $défaut  réduction par utilisation de la règle 11 (s)
+
+
+État 47
+
+   49 liste: T_CRO T_CRO2 .
+
+    $défaut  réduction par utilisation de la règle 49 (liste)
+
+
+État 48
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   50 conslist: expr . ',' conslist
+   52         | expr .
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ','      décalage et aller à l'état 87
+
+    $défaut  réduction par utilisation de la règle 52 (conslist)
+
+
+État 49
+
+   33 expr: liste . T_EQ liste
+   51 conslist: liste . ',' conslist
+   53         | liste .
+
+    T_EQ  décalage et aller à l'état 75
+    ','   décalage et aller à l'état 88
+
+    $défaut  réduction par utilisation de la règle 53 (conslist)
+
+
+État 50
+
+   48 liste: T_CRO conslist . T_CRO2
+
+    T_CRO2  décalage et aller à l'état 89
+
+
+État 51
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   54 point: T_ACO expr . ',' expr T_ACO2
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ','      décalage et aller à l'état 90
+
+
+État 52
+
+   61 circle: T_CERCLE '(' . point ',' expr ')'
+   62       | T_CERCLE '(' . T_ID ',' expr ')'
+
+    T_ID   décalage et aller à l'état 91
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 92
+
+
+État 53
+
+   69 bezier: T_BEZIER '(' . porid ',' porid ',' porid ',' porid ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 95
+
+
+État 54
+
+   63 translation: T_TRANSLATION '(' . dessin ',' porid ')'
+   64            | T_TRANSLATION '(' . T_ID ',' porid ')'
+
+    T_ID           décalage et aller à l'état 96
+    T_MINUS        décalage et aller à l'état 9
+    T_ACO          décalage et aller à l'état 14
+    T_CERCLE       décalage et aller à l'état 15
+    T_BEZIER       décalage et aller à l'état 16
+    T_TRANSLATION  décalage et aller à l'état 17
+    T_ROTATION     décalage et aller à l'état 18
+    T_HOMOTHETIE   décalage et aller à l'état 19
+
+    dessin       aller à l'état 97
+    point        aller à l'état 25
+    path         aller à l'état 26
+    circle       aller à l'état 27
+    translation  aller à l'état 28
+    rotation     aller à l'état 29
+    homothetie   aller à l'état 30
+    bezier       aller à l'état 31
+
+
+État 55
+
+   65 rotation: T_ROTATION '(' . dessin ',' porid ',' expr ')'
+   66         | T_ROTATION '(' . T_ID ',' porid ',' expr ')'
+
+    T_ID           décalage et aller à l'état 98
+    T_MINUS        décalage et aller à l'état 9
+    T_ACO          décalage et aller à l'état 14
+    T_CERCLE       décalage et aller à l'état 15
+    T_BEZIER       décalage et aller à l'état 16
+    T_TRANSLATION  décalage et aller à l'état 17
+    T_ROTATION     décalage et aller à l'état 18
+    T_HOMOTHETIE   décalage et aller à l'état 19
+
+    dessin       aller à l'état 99
+    point        aller à l'état 25
+    path         aller à l'état 26
+    circle       aller à l'état 27
+    translation  aller à l'état 28
+    rotation     aller à l'état 29
+    homothetie   aller à l'état 30
+    bezier       aller à l'état 31
+
+
+État 56
+
+   67 homothetie: T_HOMOTHETIE '(' . dessin ',' porid ',' expr ')'
+   68           | T_HOMOTHETIE '(' . T_ID ',' porid ',' expr ')'
+
+    T_ID           décalage et aller à l'état 100
+    T_MINUS        décalage et aller à l'état 9
+    T_ACO          décalage et aller à l'état 14
+    T_CERCLE       décalage et aller à l'état 15
+    T_BEZIER       décalage et aller à l'état 16
+    T_TRANSLATION  décalage et aller à l'état 17
+    T_ROTATION     décalage et aller à l'état 18
+    T_HOMOTHETIE   décalage et aller à l'état 19
+
+    dessin       aller à l'état 101
+    point        aller à l'état 25
+    path         aller à l'état 26
+    circle       aller à l'état 27
+    translation  aller à l'état 28
+    rotation     aller à l'état 29
+    homothetie   aller à l'état 30
+    bezier       aller à l'état 31
+
+
+État 57
+
+   27 expr: '(' T_MINUS . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 102
+    liste  aller à l'état 36
+
+
+État 58
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   43     | '(' expr . ')'
+   47 paraappfun: expr . expr
+
+    T_NB     décalage et aller à l'état 3
+    T_ID     décalage et aller à l'état 33
+    IF       décalage et aller à l'état 6
+    LET      décalage et aller à l'état 34
+    T_FUN    décalage et aller à l'état 8
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    T_NOT    décalage et aller à l'état 10
+    WHERE    décalage et aller à l'état 74
+    T_CRO    décalage et aller à l'état 13
+    '('      décalage et aller à l'état 20
+    ')'      décalage et aller à l'état 103
+
+    expr   aller à l'état 104
+    liste  aller à l'état 36
+
+
+État 59
+
+   42 expr: '(' paraappfun . ')'
+   46 paraappfun: paraappfun . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+    ')'    décalage et aller à l'état 105
+
+    expr   aller à l'état 106
+    liste  aller à l'état 36
+
+
+État 60
+
+    2 lign: lign s FIN_EXPR .
+
+    $défaut  réduction par utilisation de la règle 2 (lign)
+
+
+État 61
+
+    7 s: s T_PUSH . T_ID
+    8  | s T_PUSH . liste
+
+    T_ID   décalage et aller à l'état 107
+    T_CRO  décalage et aller à l'état 13
+
+    liste  aller à l'état 108
+
+
+État 62
+
+   23 expr: expr T_PLUS . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 109
+    liste  aller à l'état 36
+
+
+État 63
+
+   24 expr: expr T_MINUS . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 110
+    liste  aller à l'état 36
+
+
+État 64
+
+   25 expr: expr T_DIV . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 111
+    liste  aller à l'état 36
+
+
+État 65
+
+   26 expr: expr T_MULT . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 112
+    liste  aller à l'état 36
+
+
+État 66
+
+   28 expr: expr T_LEQ . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 113
+    liste  aller à l'état 36
+
+
+État 67
+
+   29 expr: expr T_LE . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 114
+    liste  aller à l'état 36
+
+
+État 68
+
+   31 expr: expr T_GE . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 115
+    liste  aller à l'état 36
+
+
+État 69
+
+   30 expr: expr T_GEQ . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 116
+    liste  aller à l'état 36
+
+
+État 70
+
+   32 expr: expr T_EQ . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 117
+    liste  aller à l'état 36
+
+
+État 71
+
+   34 expr: expr T_NEQ . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 118
+    liste  aller à l'état 36
+
+
+État 72
+
+   35 expr: expr T_OR . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 119
+    liste  aller à l'état 36
+
+
+État 73
+
+   36 expr: expr T_AND . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 120
+    liste  aller à l'état 36
+
+
+État 74
+
+   40 expr: expr WHERE . T_ID T_AF expr
+
+    T_ID  décalage et aller à l'état 121
+
+
+État 75
+
+   33 expr: liste T_EQ . liste
+
+    T_CRO  décalage et aller à l'état 13
+
+    liste  aller à l'état 122
+
+
+État 76
+
+   55 path: point T_MINUS . path
+
+    T_ID     décalage et aller à l'état 77
+    T_MINUS  décalage et aller à l'état 9
+    T_ACO    décalage et aller à l'état 14
+
+    point  aller à l'état 78
+    path   aller à l'état 123
+
+
+État 77
+
+   56 path: T_ID . T_MINUS path
+
+    T_MINUS  décalage et aller à l'état 32
+
+
+État 78
+
+   55 path: point . T_MINUS path
+
+    T_MINUS  décalage et aller à l'état 76
+
+
+État 79
+
+   56 path: T_ID T_MINUS path .
+
+    $défaut  réduction par utilisation de la règle 56 (path)
+
+
+État 80
+
+   41 expr: LET T_ID . T_AF expr IN expr
+
+    T_AF  décalage et aller à l'état 124
+
+
+État 81
+
+   39 expr: IF expr THEN . expr ELSE expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 125
+    liste  aller à l'état 36
+
+
+État 82
+
+    3 lign: lign LET T_ID T_AF . s FIN_EXPR
+   41 expr: LET T_ID T_AF . expr IN expr
+
+    T_NB           décalage et aller à l'état 3
+    T_ID           décalage et aller à l'état 4
+    IF             décalage et aller à l'état 6
+    LET            décalage et aller à l'état 34
+    T_FUN          décalage et aller à l'état 8
+    T_MINUS        décalage et aller à l'état 9
+    T_NOT          décalage et aller à l'état 10
+    T_TOP          décalage et aller à l'état 11
+    T_NEXT         décalage et aller à l'état 12
+    T_CRO          décalage et aller à l'état 13
+    T_ACO          décalage et aller à l'état 14
+    T_CERCLE       décalage et aller à l'état 15
+    T_BEZIER       décalage et aller à l'état 16
+    T_TRANSLATION  décalage et aller à l'état 17
+    T_ROTATION     décalage et aller à l'état 18
+    T_HOMOTHETIE   décalage et aller à l'état 19
+    '('            décalage et aller à l'état 20
+
+    s            aller à l'état 126
+    dessin       aller à l'état 22
+    expr         aller à l'état 127
+    liste        aller à l'état 24
+    point        aller à l'état 25
+    path         aller à l'état 26
+    circle       aller à l'état 27
+    translation  aller à l'état 28
+    rotation     aller à l'état 29
+    homothetie   aller à l'état 30
+    bezier       aller à l'état 31
+
+
+État 83
+
+   45 paradeffun: T_ID FLECHE . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 128
+    liste  aller à l'état 36
+
+
+État 84
+
+   44 paradeffun: T_ID paradeffun .
+
+    $défaut  réduction par utilisation de la règle 44 (paradeffun)
+
+
+État 85
+
+   58 path: T_MINUS T_ID T_MINUS . path
+
+    T_ID     décalage et aller à l'état 77
+    T_MINUS  décalage et aller à l'état 9
+    T_ACO    décalage et aller à l'état 14
+
+    point  aller à l'état 78
+    path   aller à l'état 129
+
+
+État 86
+
+   57 path: T_MINUS point T_MINUS . path
+
+    T_ID     décalage et aller à l'état 77
+    T_MINUS  décalage et aller à l'état 9
+    T_ACO    décalage et aller à l'état 14
+
+    point  aller à l'état 78
+    path   aller à l'état 130
+
+
+État 87
+
+   50 conslist: expr ',' . conslist
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr      aller à l'état 48
+    liste     aller à l'état 49
+    conslist  aller à l'état 131
+
+
+État 88
+
+   51 conslist: liste ',' . conslist
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr      aller à l'état 48
+    liste     aller à l'état 49
+    conslist  aller à l'état 132
+
+
+État 89
+
+   48 liste: T_CRO conslist T_CRO2 .
+
+    $défaut  réduction par utilisation de la règle 48 (liste)
+
+
+État 90
+
+   54 point: T_ACO expr ',' . expr T_ACO2
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 133
+    liste  aller à l'état 36
+
+
+État 91
+
+   62 circle: T_CERCLE '(' T_ID . ',' expr ')'
+
+    ','  décalage et aller à l'état 134
+
+
+État 92
+
+   61 circle: T_CERCLE '(' point . ',' expr ')'
+
+    ','  décalage et aller à l'état 135
+
+
+État 93
+
+   71 porid: T_ID .
+
+    $défaut  réduction par utilisation de la règle 71 (porid)
+
+
+État 94
+
+   70 porid: point .
+
+    $défaut  réduction par utilisation de la règle 70 (porid)
+
+
+État 95
+
+   69 bezier: T_BEZIER '(' porid . ',' porid ',' porid ',' porid ')'
+
+    ','  décalage et aller à l'état 136
+
+
+État 96
+
+   56 path: T_ID . T_MINUS path
+   64 translation: T_TRANSLATION '(' T_ID . ',' porid ')'
+
+    T_MINUS  décalage et aller à l'état 32
+    ','      décalage et aller à l'état 137
+
+
+État 97
+
+   63 translation: T_TRANSLATION '(' dessin . ',' porid ')'
+
+    ','  décalage et aller à l'état 138
+
+
+État 98
+
+   56 path: T_ID . T_MINUS path
+   66 rotation: T_ROTATION '(' T_ID . ',' porid ',' expr ')'
+
+    T_MINUS  décalage et aller à l'état 32
+    ','      décalage et aller à l'état 139
+
+
+État 99
+
+   65 rotation: T_ROTATION '(' dessin . ',' porid ',' expr ')'
+
+    ','  décalage et aller à l'état 140
+
+
+État 100
+
+   56 path: T_ID . T_MINUS path
+   68 homothetie: T_HOMOTHETIE '(' T_ID . ',' porid ',' expr ')'
+
+    T_MINUS  décalage et aller à l'état 32
+    ','      décalage et aller à l'état 141
+
+
+État 101
+
+   67 homothetie: T_HOMOTHETIE '(' dessin . ',' porid ',' expr ')'
+
+    ','  décalage et aller à l'état 142
+
+
+État 102
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   27     | '(' T_MINUS expr . ')'
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 143
+
+
+État 103
+
+   43 expr: '(' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 43 (expr)
+
+
+État 104
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   47 paraappfun: expr expr .
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 47 (paraappfun)
+
+
+État 105
+
+   42 expr: '(' paraappfun ')' .
+
+    $défaut  réduction par utilisation de la règle 42 (expr)
+
+
+État 106
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   46 paraappfun: paraappfun expr .
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 46 (paraappfun)
+
+
+État 107
+
+    7 s: s T_PUSH T_ID .
+
+    $défaut  réduction par utilisation de la règle 7 (s)
+
+
+État 108
+
+    8 s: s T_PUSH liste .
+
+    $défaut  réduction par utilisation de la règle 8 (s)
+
+
+État 109
+
+   23 expr: expr . T_PLUS expr
+   23     | expr T_PLUS expr .
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_DIV   décalage et aller à l'état 64
+    T_MULT  décalage et aller à l'état 65
+
+    $défaut  réduction par utilisation de la règle 23 (expr)
+
+
+État 110
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   24     | expr T_MINUS expr .
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_DIV   décalage et aller à l'état 64
+    T_MULT  décalage et aller à l'état 65
+
+    $défaut  réduction par utilisation de la règle 24 (expr)
+
+
+État 111
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   25     | expr T_DIV expr .
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    $défaut  réduction par utilisation de la règle 25 (expr)
+
+
+État 112
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   26     | expr T_MULT expr .
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    $défaut  réduction par utilisation de la règle 26 (expr)
+
+
+État 113
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   28     | expr T_LEQ expr .
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 28 (expr)
+
+
+État 114
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   29     | expr T_LE expr .
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 29 (expr)
+
+
+État 115
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   31     | expr T_GE expr .
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 31 (expr)
+
+
+État 116
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   30     | expr T_GEQ expr .
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 30 (expr)
+
+
+État 117
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   32     | expr T_EQ expr .
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 32 (expr)
+
+
+État 118
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   34     | expr T_NEQ expr .
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 34 (expr)
+
+
+État 119
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   35     | expr T_OR expr .
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 35 (expr)
+
+
+État 120
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   36     | expr T_AND expr .
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 36 (expr)
+
+
+État 121
+
+   40 expr: expr WHERE T_ID . T_AF expr
+
+    T_AF  décalage et aller à l'état 144
+
+
+État 122
+
+   33 expr: liste T_EQ liste .
+
+    $défaut  réduction par utilisation de la règle 33 (expr)
+
+
+État 123
+
+   55 path: point T_MINUS path .
+
+    $défaut  réduction par utilisation de la règle 55 (path)
+
+
+État 124
+
+   41 expr: LET T_ID T_AF . expr IN expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 145
+    liste  aller à l'état 36
+
+
+État 125
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   39     | IF expr THEN expr . ELSE expr
+   40     | expr . WHERE T_ID T_AF expr
+
+    ELSE     décalage et aller à l'état 146
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+
+État 126
+
+    3 lign: lign LET T_ID T_AF s . FIN_EXPR
+    7 s: s . T_PUSH T_ID
+    8  | s . T_PUSH liste
+
+    FIN_EXPR  décalage et aller à l'état 147
+    T_PUSH    décalage et aller à l'état 61
+
+
+État 127
+
+    5 s: expr .
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   41     | LET T_ID T_AF expr . IN expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    IN       décalage et aller à l'état 148
+
+    $défaut  réduction par utilisation de la règle 5 (s)
+
+
+État 128
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   45 paradeffun: T_ID FLECHE expr .
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 45 (paradeffun)
+
+
+État 129
+
+   58 path: T_MINUS T_ID T_MINUS path .
+
+    $défaut  réduction par utilisation de la règle 58 (path)
+
+
+État 130
+
+   57 path: T_MINUS point T_MINUS path .
+
+    $défaut  réduction par utilisation de la règle 57 (path)
+
+
+État 131
+
+   50 conslist: expr ',' conslist .
+
+    $défaut  réduction par utilisation de la règle 50 (conslist)
+
+
+État 132
+
+   51 conslist: liste ',' conslist .
+
+    $défaut  réduction par utilisation de la règle 51 (conslist)
+
+
+État 133
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   54 point: T_ACO expr ',' expr . T_ACO2
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    T_ACO2   décalage et aller à l'état 149
+
+
+État 134
+
+   62 circle: T_CERCLE '(' T_ID ',' . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 150
+    liste  aller à l'état 36
+
+
+État 135
+
+   61 circle: T_CERCLE '(' point ',' . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 151
+    liste  aller à l'état 36
+
+
+État 136
+
+   69 bezier: T_BEZIER '(' porid ',' . porid ',' porid ',' porid ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 152
+
+
+État 137
+
+   64 translation: T_TRANSLATION '(' T_ID ',' . porid ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 153
+
+
+État 138
+
+   63 translation: T_TRANSLATION '(' dessin ',' . porid ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 154
+
+
+État 139
+
+   66 rotation: T_ROTATION '(' T_ID ',' . porid ',' expr ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 155
+
+
+État 140
+
+   65 rotation: T_ROTATION '(' dessin ',' . porid ',' expr ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 156
+
+
+État 141
+
+   68 homothetie: T_HOMOTHETIE '(' T_ID ',' . porid ',' expr ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 157
+
+
+État 142
+
+   67 homothetie: T_HOMOTHETIE '(' dessin ',' . porid ',' expr ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 158
+
+
+État 143
+
+   27 expr: '(' T_MINUS expr ')' .
+
+    $défaut  réduction par utilisation de la règle 27 (expr)
+
+
+État 144
+
+   40 expr: expr WHERE T_ID T_AF . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 159
+    liste  aller à l'état 36
+
+
+État 145
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   41     | LET T_ID T_AF expr . IN expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    IN       décalage et aller à l'état 148
+
+
+État 146
+
+   39 expr: IF expr THEN expr ELSE . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 160
+    liste  aller à l'état 36
+
+
+État 147
+
+    3 lign: lign LET T_ID T_AF s FIN_EXPR .
+
+    $défaut  réduction par utilisation de la règle 3 (lign)
+
+
+État 148
+
+   41 expr: LET T_ID T_AF expr IN . expr
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 161
+    liste  aller à l'état 36
+
+
+État 149
+
+   54 point: T_ACO expr ',' expr T_ACO2 .
+
+    $défaut  réduction par utilisation de la règle 54 (point)
+
+
+État 150
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   62 circle: T_CERCLE '(' T_ID ',' expr . ')'
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 162
+
+
+État 151
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   61 circle: T_CERCLE '(' point ',' expr . ')'
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 163
+
+
+État 152
+
+   69 bezier: T_BEZIER '(' porid ',' porid . ',' porid ',' porid ')'
+
+    ','  décalage et aller à l'état 164
+
+
+État 153
+
+   64 translation: T_TRANSLATION '(' T_ID ',' porid . ')'
+
+    ')'  décalage et aller à l'état 165
+
+
+État 154
+
+   63 translation: T_TRANSLATION '(' dessin ',' porid . ')'
+
+    ')'  décalage et aller à l'état 166
+
+
+État 155
+
+   66 rotation: T_ROTATION '(' T_ID ',' porid . ',' expr ')'
+
+    ','  décalage et aller à l'état 167
+
+
+État 156
+
+   65 rotation: T_ROTATION '(' dessin ',' porid . ',' expr ')'
+
+    ','  décalage et aller à l'état 168
+
+
+État 157
+
+   68 homothetie: T_HOMOTHETIE '(' T_ID ',' porid . ',' expr ')'
+
+    ','  décalage et aller à l'état 169
+
+
+État 158
+
+   67 homothetie: T_HOMOTHETIE '(' dessin ',' porid . ',' expr ')'
+
+    ','  décalage et aller à l'état 170
+
+
+État 159
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   40     | expr WHERE T_ID T_AF expr .
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 40 (expr)
+
+
+État 160
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   39     | IF expr THEN expr ELSE expr .
+   40     | expr . WHERE T_ID T_AF expr
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 39 (expr)
+
+
+État 161
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   41     | LET T_ID T_AF expr IN expr .
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    WHERE    décalage et aller à l'état 74
+
+    $défaut  réduction par utilisation de la règle 41 (expr)
+
+
+État 162
+
+   62 circle: T_CERCLE '(' T_ID ',' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 62 (circle)
+
+
+État 163
+
+   61 circle: T_CERCLE '(' point ',' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 61 (circle)
+
+
+État 164
+
+   69 bezier: T_BEZIER '(' porid ',' porid ',' . porid ',' porid ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 171
+
+
+État 165
+
+   64 translation: T_TRANSLATION '(' T_ID ',' porid ')' .
+
+    $défaut  réduction par utilisation de la règle 64 (translation)
+
+
+État 166
+
+   63 translation: T_TRANSLATION '(' dessin ',' porid ')' .
+
+    $défaut  réduction par utilisation de la règle 63 (translation)
+
+
+État 167
+
+   66 rotation: T_ROTATION '(' T_ID ',' porid ',' . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 172
+    liste  aller à l'état 36
+
+
+État 168
+
+   65 rotation: T_ROTATION '(' dessin ',' porid ',' . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 173
+    liste  aller à l'état 36
+
+
+État 169
+
+   68 homothetie: T_HOMOTHETIE '(' T_ID ',' porid ',' . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 174
+    liste  aller à l'état 36
+
+
+État 170
+
+   67 homothetie: T_HOMOTHETIE '(' dessin ',' porid ',' . expr ')'
+
+    T_NB   décalage et aller à l'état 3
+    T_ID   décalage et aller à l'état 33
+    IF     décalage et aller à l'état 6
+    LET    décalage et aller à l'état 34
+    T_FUN  décalage et aller à l'état 8
+    T_NOT  décalage et aller à l'état 10
+    T_CRO  décalage et aller à l'état 13
+    '('    décalage et aller à l'état 20
+
+    expr   aller à l'état 175
+    liste  aller à l'état 36
+
+
+État 171
+
+   69 bezier: T_BEZIER '(' porid ',' porid ',' porid . ',' porid ')'
+
+    ','  décalage et aller à l'état 176
+
+
+État 172
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   66 rotation: T_ROTATION '(' T_ID ',' porid ',' expr . ')'
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 177
+
+
+État 173
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   65 rotation: T_ROTATION '(' dessin ',' porid ',' expr . ')'
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 178
+
+
+État 174
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   68 homothetie: T_HOMOTHETIE '(' T_ID ',' porid ',' expr . ')'
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 179
+
+
+État 175
+
+   23 expr: expr . T_PLUS expr
+   24     | expr . T_MINUS expr
+   25     | expr . T_DIV expr
+   26     | expr . T_MULT expr
+   28     | expr . T_LEQ expr
+   29     | expr . T_LE expr
+   30     | expr . T_GEQ expr
+   31     | expr . T_GE expr
+   32     | expr . T_EQ expr
+   34     | expr . T_NEQ expr
+   35     | expr . T_OR expr
+   36     | expr . T_AND expr
+   40     | expr . WHERE T_ID T_AF expr
+   67 homothetie: T_HOMOTHETIE '(' dessin ',' porid ',' expr . ')'
+
+    T_PLUS   décalage et aller à l'état 62
+    T_MINUS  décalage et aller à l'état 63
+    T_DIV    décalage et aller à l'état 64
+    T_MULT   décalage et aller à l'état 65
+    T_LEQ    décalage et aller à l'état 66
+    T_LE     décalage et aller à l'état 67
+    T_GE     décalage et aller à l'état 68
+    T_GEQ    décalage et aller à l'état 69
+    T_EQ     décalage et aller à l'état 70
+    T_NEQ    décalage et aller à l'état 71
+    T_OR     décalage et aller à l'état 72
+    T_AND    décalage et aller à l'état 73
+    WHERE    décalage et aller à l'état 74
+    ')'      décalage et aller à l'état 180
+
+
+État 176
+
+   69 bezier: T_BEZIER '(' porid ',' porid ',' porid ',' . porid ')'
+
+    T_ID   décalage et aller à l'état 93
+    T_ACO  décalage et aller à l'état 14
+
+    point  aller à l'état 94
+    porid  aller à l'état 181
+
+
+État 177
+
+   66 rotation: T_ROTATION '(' T_ID ',' porid ',' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 66 (rotation)
+
+
+État 178
+
+   65 rotation: T_ROTATION '(' dessin ',' porid ',' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 65 (rotation)
+
+
+État 179
+
+   68 homothetie: T_HOMOTHETIE '(' T_ID ',' porid ',' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 68 (homothetie)
+
+
+État 180
+
+   67 homothetie: T_HOMOTHETIE '(' dessin ',' porid ',' expr ')' .
+
+    $défaut  réduction par utilisation de la règle 67 (homothetie)
+
+
+État 181
+
+   69 bezier: T_BEZIER '(' porid ',' porid ',' porid ',' porid . ')'
+
+    ')'  décalage et aller à l'état 182
+
+
+État 182
+
+   69 bezier: T_BEZIER '(' porid ',' porid ',' porid ',' porid ')' .
+
+    $défaut  réduction par utilisation de la règle 69 (bezier)
