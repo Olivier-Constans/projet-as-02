@@ -8,14 +8,11 @@
 
 struct env* ENV=NULL;
 struct configuration* CONF = NULL;
-
-
+ FILE * file=NULL;
+	
  void printlist(struct cell c);
  void printResult(struct expr *expr);
- void printPoint(struct expr* c);
  void printPath(struct cell c);
- void printCircle(struct cell c);
- void printBezier(struct bezier b);
 
  void printRESULT(struct expr *expr){
    printf(">>>>>");
@@ -24,9 +21,6 @@ struct configuration* CONF = NULL;
  }
 
  void printResult(struct expr *expr){
-   if(expr->type==CELL || expr->type==NIL){
-     printlist(expr->expr->cell);
-   }else{
    CONF=mk_conf(mk_closure(expr,ENV)); 
    step(CONF);
    if(CONF->closure->expr->type == NUM){
@@ -35,26 +29,31 @@ struct configuration* CONF = NULL;
      printf("FUN");
    }
    if(CONF->closure->expr->type == POINT){
-     printPoint(CONF->closure->expr);
+     printf("{%d,%d}",CONF->closure->expr->expr->cell.left->expr->num,CONF->closure->expr->expr->cell.right->expr->num);
    }
    if(CONF->closure->expr->type == PATH){
      printPath(CONF->closure->expr->expr->cell);
    }
    if(CONF->closure->expr->type == CIRCLE){
-     printCircle(CONF->closure->expr->expr->cell);
+     printf("Cercle: centre= {%d,%d},rayon= %d ",CONF->closure->expr->expr->cell.left->expr->cell.left->expr->num,CONF->closure->expr->expr->cell.left->expr->cell.right->expr->num,CONF->closure->expr->expr->cell.right->expr->num );
    }
    if(CONF->closure->expr->type == BEZIER){
-     printBezier(CONF->closure->expr->expr->bezier);
+     printf("Bezier: {%d,%d},",CONF->closure->expr->expr->bezier.p1->expr->cell.right->expr->num,CONF->closure->expr->expr->bezier.p1->expr->cell.left->expr->num);
+     printf("{%d,%d},",CONF->closure->expr->expr->bezier.p2->expr->cell.right->expr->num,CONF->closure->expr->expr->bezier.p2->expr->cell.left->expr->num);
+     printf("{%d,%d},",CONF->closure->expr->expr->bezier.p3->expr->cell.right->expr->num,CONF->closure->expr->expr->bezier.p3->expr->cell.left->expr->num);
+     printf("{%d,%d}",CONF->closure->expr->expr->bezier.p4->expr->cell.right->expr->num,CONF->closure->expr->expr->bezier.p4->expr->cell.left->expr->num);
    }
+   if(CONF->closure->expr->type==CELL || CONF->closure->expr->type==NIL ){
+     printlist(CONF->closure->expr->expr->cell);
    }
  }
 
  void printlist(struct cell c){
    struct cell *tmp= &c;
-   printf("[ ");
+   printf("[");
    while(tmp != NULL){
      if(tmp->left == NULL){
-       printf("NIL ]");
+       printf("NIL]");
        return;
      }
      else{
@@ -67,40 +66,11 @@ struct configuration* CONF = NULL;
    }
    printf("] "); 
  }
-void printPoint(struct expr* c){
-   if(c->type ==ID){
-     struct configuration* conf =mk_conf(mk_closure(c,ENV)); 			
-       step(conf); 
-       if(conf->closure->expr->type != POINT){
-	 exit(EXIT_FAILURE);
-       }
-       printPoint(conf->closure->expr);
-   }else{
-
-   int x;
-   int y;
-   CONF=mk_conf(mk_closure(c->expr->cell.left,ENV)); 
-   step(CONF);
-   if(CONF->closure->expr->type != NUM)
-     exit(EXIT_FAILURE);
-   x=CONF->closure->expr->expr->num;
-   CONF=mk_conf(mk_closure(c->expr->cell.right,ENV)); 
-   step(CONF);
-   if(CONF->closure->expr->type != NUM)
-     exit(EXIT_FAILURE);
-   y=CONF->closure->expr->expr->num;
-
-  printf("{%d,%d}",x,y);
- }
-}
 
  void printPath(struct cell c){
    struct cell *tmp= &c;
    while(tmp != NULL){
-     if(tmp->left->type != POINT && tmp->left->type != ID){
-       exit(EXIT_FAILURE);
-     }
-     printPoint(tmp->left);
+     printf("{%d,%d}",tmp->left->expr->cell.left->expr->num,tmp->left->expr->cell.right->expr->num);
      if(tmp->right == NULL)
        break;
      printf("--");
@@ -108,21 +78,55 @@ void printPoint(struct expr* c){
    }
  }
 
- void printCircle(struct cell c){
-   printf("Cercle: centre= ");
-   printPoint(c.left);
-   printf(" ,rayon= %d ",c.right->expr->num );
- }
+ /*        FONCTION DRAW                */
+void cleanDraw(){
+  fclose(file);
+  file=fopen("canvas.js","w+");
+  fprintf(file,"window.onload = function() \n { \n var canvas = document.getElementById('mon_canvas'); \n if(!canvas) \n { \n alert(\"Impossible de récupérer le canvas\"); \n return; \n } \n var context = canvas.getContext('2d'); \n if(!context) \n { \n  alert(\"Impossible de récupérer le context du canvas\"); \n return; \n } \n");
+  fflush(file);
 
- void printBezier(struct bezier b){
-   printf("Bezier: ");
-   printPoint(b.p1);
-   printf(", ");
-   printPoint(b.p2);
-   printf(", ");
-   printPoint(b.p3);
-   printf(", ");
-   printPoint(b.p4);
+}
+ void Draw(struct expr * expr){
+   CONF=mk_conf(mk_closure(expr,ENV)); 
+   step(CONF);
+   fseek(file,-1,SEEK_END); // ce place au niveau du dernier }
+   switch(CONF->closure->expr->type){
+   case POINT:{
+     fprintf(file,"context.beginPath(); \n context.arc(%d, %d, 1,0, Math.PI*2); \n context.fill(); \n context.closePath(); \n}",CONF->closure->expr->expr->cell.left->expr->num,CONF->closure->expr->expr->cell.right->expr->num);
+     fflush(file);
+     return;}
+   case PATH:
+     fprintf(file,"context.beginPath();\n");
+     fprintf(file,"context.moveTo(%d,%d);\n",CONF->closure->expr->expr->cell.left->expr->cell.left->expr->num,CONF->closure->expr->expr->cell.left->expr->cell.right->expr->num);
+     fflush(file);
+     struct cell *tmp= &CONF->closure->expr->expr->cell.right->expr->cell;
+
+     while(tmp != NULL){
+       fprintf(file,"context.lineTo(%d,%d);\n",tmp->left->expr->cell.left->expr->num,tmp->left->expr->cell.right->expr->num);
+       if(tmp->right == NULL)
+	 break;
+       tmp = &tmp->right->expr->cell;
+     }
+     fprintf(file,"context.stroke();\n");
+     fprintf(file,"context.closePath();\n}");
+     fflush(file);
+     return;
+   case CIRCLE:
+     fprintf(file,"context.beginPath(); \n context.arc(%d, %d, %d,0, Math.PI*2); \n context.stroke(); \n context.closePath(); \n}",CONF->closure->expr->expr->cell.left->expr->cell.right->expr->num,CONF->closure->expr->expr->cell.left->expr->cell.right->expr->num,CONF->closure->expr->expr->cell.right->expr->num);
+     fflush(file);
+     return;
+   case BEZIER:
+     fprintf(file,"context.beginPath(); \n");
+     fprintf(file,"context.moveTo(%d,%d); \n",CONF->closure->expr->expr->bezier.p1->expr->cell.left->expr->num, CONF->closure->expr->expr->bezier.p1->expr->cell.right->expr->num);
+     fprintf(file,"context.bezierCurveTo(%d,%d",CONF->closure->expr->expr->bezier.p2->expr->cell.left->expr->num, CONF->closure->expr->expr->bezier.p2->expr->cell.right->expr->num);
+     fprintf(file,",%d,%d,",CONF->closure->expr->expr->bezier.p3->expr->cell.left->expr->num, CONF->closure->expr->expr->bezier.p3->expr->cell.right->expr->num);
+     fprintf(file,"%d,%d);",CONF->closure->expr->expr->bezier.p4->expr->cell.left->expr->num, CONF->closure->expr->expr->bezier.p4->expr->cell.right->expr->num);
+     fprintf(file,"context.stroke();\n}");
+     fflush(file);
+     return;
+   default:
+     assert(0);
+   }
  }
 
 %}
@@ -177,6 +181,8 @@ void printPoint(struct expr* c){
 %token T_ROTATION
 %token T_HOMOTHETIE
 
+%token T_DRAW
+
 %type <e>s
 %type <e>expr
 
@@ -198,8 +204,8 @@ void printPoint(struct expr* c){
 
 %right FLECHE  ELSE
 %right T_EQ
-%right T_OR T_AND T_NOT
-%right T_LEQ T_GEQ T_LE T_GE T_NEQ 
+%left T_OR T_AND T_NOT
+%left T_LEQ T_GEQ T_LE T_GE T_NEQ 
 %right T_AF
 
 %right LET IN WHERE T_ID T_NB
@@ -222,8 +228,10 @@ lign:
 /*empty*/
 | lign s[exp]  FIN_EXPR       {printRESULT($exp) ;}	
 
-| lign LET T_ID[id] T_AF s[exp1] FIN_EXPR    {ENV = push_rec_env($id,$exp1,ENV);
-                                              printRESULT($exp1);}	
+| lign LET T_ID[id] T_AF s[exp1] FIN_EXPR    {ENV = push_rec_env($id,$exp1,ENV);//push_env($id,$exp1,ENV)
+                                              printRESULT($exp1);}
+| lign T_DRAW '(' dessin[d] ')' FIN_EXPR             {Draw($d);}
+| lign T_DRAW '(' T_ID[d] ')' FIN_EXPR               {Draw(mk_id($d));}	
 //permet de traiter le cas sans expression
 | lign FIN_EXPR					
 ;
@@ -366,7 +374,19 @@ point          {$$=$1;}
 %%
 
 int main(int argc, char *argv[])
-{
-    yyparse();
-    return EXIT_SUCCESS;
+{  
+  FILE * html =fopen("canvas.html","w+");
+  fprintf(html,"<!DOCTYPE html>\n<html>\n<head>\n<title>Mon projet canvas</title>\n<script src=\"canvas.js\">\n</script>\n</head>\n<body>\n<canvas id=\"mon_canvas\" width=\"500\" height=\"500\">\n</canvas>\n</body>\n</html>");
+  fflush(html);
+  fclose(html);
+  file = fopen("canvas.js","w+");
+  const char* h="window.onload = function() \n { \n var canvas = document.getElementById('mon_canvas'); \n if(!canvas) \n { \n alert(\"Impossible de récupérer le canvas\"); \n return; \n } \n var context = canvas.getContext('2d'); \n if(!context) \n { \n  alert(\"Impossible de récupérer le context du canvas\"); \n return; \n } \n }";
+
+  fprintf(file,"%s",h);
+  fflush(file);
+  yyparse();
+  fclose(file);
+  return EXIT_SUCCESS;
 }
+
+

@@ -70,222 +70,107 @@ struct stack *push_stack(struct closure *cl, struct stack *stack){
 
 //--------------------------------------------------------------
 
-struct expr* translation(struct configuration *conf,struct expr f,struct cell* vec){
-  struct env *env = conf->closure->env; 
-  int x;
-  int y;
-  int xvec;
-  int yvec;
-  switch(f.type){
+struct expr* translation(struct expr *f,struct expr* vec){
+ switch(f->type){
   case POINT:
-
-   conf=mk_conf(mk_closure(f.expr->cell.left,env)); 
-   step(conf);
-   if(conf->closure->expr->type != NUM)
-     exit(EXIT_FAILURE);
-   x=conf->closure->expr->expr->num;
-   conf=mk_conf(mk_closure(f.expr->cell.right,env)); 
-   step(conf);
-   if(conf->closure->expr->type != NUM)
-     exit(EXIT_FAILURE);
-   y=conf->closure->expr->expr->num;
-
-   conf=mk_conf(mk_closure(vec->left,env)); 
-   step(conf);
-   if(conf->closure->expr->type != NUM)
-     exit(EXIT_FAILURE);
-   xvec=conf->closure->expr->expr->num;
-   conf=mk_conf(mk_closure(vec->right,env)); 
-   step(conf);
-   if(conf->closure->expr->type != NUM)
-     exit(EXIT_FAILURE);
-   yvec=conf->closure->expr->expr->num;
-
-   return mk_point(mk_int(x+xvec),mk_int(y+yvec));
-
+    return mk_point(mk_int(f->expr->cell.left->expr->num+vec->expr->cell.left->expr->num),mk_int(f->expr->cell.right->expr->num+vec->expr->cell.right->expr->num));
   case CIRCLE:
-    return mk_circle(translation(conf,*f.expr->cell.left,vec),f.expr->cell.right);
+    return mk_circle(translation(f->expr->cell.left,vec),f->expr->cell.right);
   case PATH:
-    if(f.expr->cell.right == NULL)
-      return mk_path(translation(conf,*f.expr->cell.left,vec),NULL);
-    return mk_path(translation(conf,*f.expr->cell.left,vec),translation(conf,*f.expr->cell.right,vec));
+    if(f->expr->cell.right == NULL)
+      return mk_path(translation(f->expr->cell.left,vec),NULL);
+    return mk_path(translation(f->expr->cell.left,vec),translation(f->expr->cell.right,vec));
    case BEZIER:
-    return mk_bezier(translation(conf,*f.expr->bezier.p1,vec),translation(conf,*f.expr->bezier.p2,vec),translation(conf,*f.expr->bezier.p3,vec),translation(conf,*f.expr->bezier.p4,vec));
-  case ID:
-    conf =mk_conf(mk_closure(&f,env)); 
-    step(conf);
-    return translation(conf,*conf->closure->expr,vec);
+    return mk_bezier(translation(f->expr->bezier.p1,vec),translation(f->expr->bezier.p2,vec),translation(f->expr->bezier.p3,vec),translation(f->expr->bezier.p4,vec));
   default: assert(0);
   }
 }
-struct expr* rotation(struct configuration *conf,struct expr f,struct cell* centre,struct expr angle){
-  struct env *env = conf->closure->env; 
+
+struct expr* rotation(struct expr* f,struct expr* centre,struct expr* angle){
   int x;
   int y;
   int xc;
   int yc;
   double ang;
 
-  switch(f.type){
+  switch(f->type){
   case POINT:
-
-    conf=mk_conf(mk_closure(f.expr->cell.left,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    x=conf->closure->expr->expr->num;
-    conf=mk_conf(mk_closure(f.expr->cell.right,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    y=conf->closure->expr->expr->num;
-
-    conf=mk_conf(mk_closure(centre->left,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    xc=conf->closure->expr->expr->num;
-    conf=mk_conf(mk_closure(centre->right,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    yc=conf->closure->expr->expr->num;
-
-    conf=mk_conf(mk_closure(&angle,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    ang= (double)conf->closure->expr->expr->num *M_PI/180;
+    {
+      int x= f->expr->cell.left->expr->num;
+      int y= f->expr->cell.right->expr->num;
+      int xc=centre->expr->cell.left->expr->num;
+      int yc=centre->expr->cell.left->expr->num;
+      double ang =(double) angle->expr->num*M_PI/180;
 
     // x' = cos(theta)*(x-xc) - sin(theta)*(y-yc) + xc
     // y' = sin(theta)*(x-xc) + cos(theta)*(y-yc) + yc
      
     return mk_point(mk_int (cos(ang)*(x-xc)-sin(ang)*(y-yc)+xc),mk_int(sin(ang)*(x-xc)+cos(ang)*(y-yc)+yc));
-
-  case CIRCLE:
-    return mk_circle(rotation(conf,*f.expr->cell.left,centre,angle),f.expr->cell.right);
-  case PATH:
-    if(f.expr->cell.right == NULL)
-      return mk_path(rotation (conf,*f.expr->cell.left,centre,angle),NULL);
-    return mk_path(rotation(conf,*f.expr->cell.left,centre,angle),rotation(conf,*f.expr->cell.right,centre,angle));
-  case BEZIER:
-    return mk_bezier(rotation(conf,*f.expr->bezier.p1,centre,angle),rotation(conf,*f.expr->bezier.p2,centre,angle),rotation(conf,*f.expr->bezier.p3,centre,angle),rotation(conf,*f.expr->bezier.p4,centre,angle));
-  case ID:
-    conf =mk_conf(mk_closure(&f,env)); 
-    step(conf);
-    return rotation(conf,*conf->closure->expr,centre,angle);
-  default: assert(0);
-  }
-}
-
-struct expr* homothetie(struct configuration *conf,struct expr f,struct cell* centre,struct expr ratio){
-struct env *env = conf->closure->env; 
-  int x;
-  int y;
-  int xc;
-  int yc;
-  int rat;
-
-  switch(f.type){
-  case POINT:
-
-    conf=mk_conf(mk_closure(f.expr->cell.left,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    x=conf->closure->expr->expr->num;
-    conf=mk_conf(mk_closure(f.expr->cell.right,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    y=conf->closure->expr->expr->num;
-
-    conf=mk_conf(mk_closure(centre->left,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    xc=conf->closure->expr->expr->num;
-    conf=mk_conf(mk_closure(centre->right,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    yc=conf->closure->expr->expr->num;
-
-    conf=mk_conf(mk_closure(&ratio,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    rat= conf->closure->expr->expr->num;
-
-    return mk_point(mk_int(xc+((x-xc)*rat)),mk_int(yc+((y-yc)*rat)));
-
-  case CIRCLE:
-    conf=mk_conf(mk_closure(&ratio,env)); 
-    step(conf);
-    if(conf->closure->expr->type != NUM)
-      exit(EXIT_FAILURE);
-    rat= conf->closure->expr->expr->num;
-    return mk_circle(homothetie(conf,*f.expr->cell.left,centre,ratio),mk_int(f.expr->cell.right->expr->num*rat));
-  case PATH:
-    if(f.expr->cell.right == NULL)
-      return mk_path(homothetie(conf,*f.expr->cell.left,centre,ratio),NULL);
-    return mk_path(homothetie(conf,*f.expr->cell.left,centre,ratio),homothetie(conf,*f.expr->cell.right,centre,ratio));
-  case BEZIER:
-    return mk_bezier(homothetie(conf,*f.expr->bezier.p1,centre,ratio),homothetie(conf,*f.expr->bezier.p2,centre,ratio),homothetie(conf,*f.expr->bezier.p3,centre,ratio),homothetie(conf,*f.expr->bezier.p4,centre,ratio));
-  case ID:
-    conf =mk_conf(mk_closure(&f,env)); 
-    step(conf);
-    return homothetie(conf,*conf->closure->expr,centre,ratio);
-  default: assert(0);
-  }
-}
-
-
-
-
-int elemStep(struct configuration *conf,struct cell *cell1,struct cell *cell2){
-  printf("debut\n");
-  struct env *env = conf->closure->env;
-  struct configuration* CONF;
-  
-  if(cell1 == NULL || cell2 == NULL)
-    return 0;
-
-  if(cell1->left==NULL || cell2->left ==NULL){
-    if(cell1->left==NULL && cell2->left ==NULL)
-      return 1;
-    return 0;
-  }
-  struct cell *tabcell[2]={cell1,cell2};
-  int tabres[4]={NIL,0,NIL,0};
-  int i;
-  for(i=0;i<2;i++){
-    CONF= mk_conf(mk_closure(tabcell[i]->left,NULL));
-    step(CONF);
-    tabres[2*i]=CONF->closure->expr->type;
-    if((tabcell[i]->left->type == APP || tabcell[i]->left->type == ID)){
-      if(tabres[2*i]== NUM)
-	tabres[2*i+1]=CONF->closure->expr->expr->num;
-    }else{
-      if(tabres[2*i] == NUM)
-	tabres[2*i+1]=tabcell[i]->left->expr->num;
     }
+  case CIRCLE:
+    return mk_circle(rotation(f->expr->cell.left,centre,angle),f->expr->cell.right);
+  case PATH:
+    if(f->expr->cell.right == NULL)
+      return mk_path(rotation (f->expr->cell.left,centre,angle),NULL);
+    return mk_path(rotation(f->expr->cell.left,centre,angle),rotation(f->expr->cell.right,centre,angle));
+  case BEZIER:
+    return mk_bezier(rotation(f->expr->bezier.p1,centre,angle),rotation(f->expr->bezier.p2,centre,angle),rotation(f->expr->bezier.p3,centre,angle),rotation(f->expr->bezier.p4,centre,angle));
+  default: assert(0);
   }
-  if(tabres[0]==tabres[2]){
-    if(tabres[0] == NUM && tabres[1] != tabres[3])
-      return 0;
-   
-    if(cell1->right == NULL && cell2->right == NULL)
-      return 1;
-    if(cell1->right == NULL || cell2->right == NULL)
-      return 0;
-     if(tabres[0] == CELL)
-      return elemStep(conf,&cell1->left->expr->cell,&cell2->left->expr->cell)  && elemStep(conf,&cell1->right->expr->cell,&cell2->right->expr->cell);
-    
-    return elemStep(conf,&cell1->right->expr->cell,&cell2->right->expr->cell);
-  }
-  return 0;
 }
+
+struct expr* homothetie(struct expr* f,struct expr* centre,struct expr* ratio){
+  int rat=ratio->expr->num;
+  switch(f->type){
+  case POINT:
+    {
+      int x= f->expr->cell.left->expr->num;
+      int y= f->expr->cell.right->expr->num;
+      int xc=centre->expr->cell.left->expr->num;
+      int yc=centre->expr->cell.left->expr->num;
+      return mk_point(mk_int(xc+((x-xc)*rat)),mk_int(yc+((y-yc)*rat)));
+  }
+  case CIRCLE:
+    return mk_circle(homothetie(f->expr->cell.left,centre,ratio),mk_int(f->expr->cell.right->expr->num*rat));
+  case PATH:
+    if(f->expr->cell.right == NULL)
+      return mk_path(homothetie(f->expr->cell.left,centre,ratio),NULL);
+    return mk_path(homothetie(f->expr->cell.left,centre,ratio),homothetie(f->expr->cell.right,centre,ratio));
+  case BEZIER:
+    return mk_bezier(homothetie(f->expr->bezier.p1,centre,ratio),homothetie(f->expr->bezier.p2,centre,ratio),homothetie(f->expr->bezier.p3,centre,ratio),homothetie(f->expr->bezier.p4,centre,ratio));
+  default: assert(0);
+  }
+}
+
+int CompareCell(struct cell *cell1,struct cell *cell2){
+  if(cell1 == NULL && cell2 == NULL)
+    return 1;
+  if(cell1->left==NULL || cell2->left ==NULL){
+    return 0;
+  }
+  if(cell1->right == NULL && cell2->right == NULL)
+      return 1;
+  if(cell1->right == NULL || cell2->right == NULL){
+    return 0;
+  }
+  
+  if(cell1->left->type != cell2->left->type){
+    return 0;
+  }
+
+  switch(cell1->left->type){
+  case NUM:
+    if(cell1->left->expr->num != cell2->left->expr->num){
+      return 0;
+    }
+  case CELL:
+    return CompareCell(&cell1->left->expr->cell,&cell2->left->expr->cell)  && CompareCell(&cell1->right->expr->cell,&cell2->right->expr->cell);
+  default : 
+	assert(0);	
+  }
+    return CompareCell(&cell1->right->expr->cell,&cell2->right->expr->cell);
+}
+
 
 void step(struct configuration *conf){
   struct expr *expr = conf->closure->expr;
@@ -336,19 +221,89 @@ void step(struct configuration *conf){
     }
   case NUM: 
     return;
-  case CELL:
+  case CELL:{
+    struct expr *p =NULL;
+    if(expr->expr->cell.right!=NULL){
+    conf->closure = mk_closure(expr->expr->cell.right,env);
+    step(conf);
+    p=conf->closure->expr;
+    }
     conf->closure = mk_closure(expr->expr->cell.left,env);
+    step(conf);
+    conf->closure = mk_closure(mk_cell(conf->closure->expr,p),env);
     return ;
+  }
   case NIL:
     return ;
   case POINT:
+    {
+    int x;
+    int y;
+    conf->closure = mk_closure(expr->expr->cell.left,env);
+    step(conf);
+    if(conf->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+   
+    x = conf->closure->expr->expr->num;
+    conf->closure = mk_closure(expr->expr->cell.right,env);
+    step(conf);
+    if(conf->closure->expr->type != NUM)
+      exit(EXIT_FAILURE);
+    y = conf->closure->expr->expr->num;
+
+    conf->closure = mk_closure(mk_point(mk_int(x),mk_int(y)),env);
     return;
-  case PATH:
+    }
+  case PATH:{
+    struct expr *p =NULL;
+    if(expr->expr->cell.right!=NULL){
+    conf->closure = mk_closure(expr->expr->cell.right,env);
+    step(conf);
+    p=conf->closure->expr;
+    }
+    conf->closure = mk_closure(expr->expr->cell.left,env);
+    step(conf);
+    conf->closure = mk_closure(mk_path(conf->closure->expr,p),env);
     return;
-  case CIRCLE:
+  }
+  case CIRCLE:{
+    struct expr *p;
+    struct expr* rayon;
+    conf->closure = mk_closure(expr->expr->cell.left,env);
+    step(conf);
+    p =conf->closure->expr;
+    conf->closure = mk_closure(expr->expr->cell.right,env);
+    step(conf);
+    if(conf->closure->expr->type != NUM)
+     exit(EXIT_FAILURE);
+    rayon = conf->closure->expr;
+    conf->closure = mk_closure(mk_circle(p,rayon),env);
     return;
+  }
   case BEZIER:
+    {
+    struct expr *p1;
+    struct expr *p2;
+    struct expr *p3;
+    struct expr *p4;
+    conf->closure = mk_closure(expr->expr->bezier.p1,env);
+    step(conf);
+    p1 =conf->closure->expr;
+
+    conf->closure = mk_closure(expr->expr->bezier.p2,env);
+    step(conf);
+    p2 =conf->closure->expr;
+
+    conf->closure = mk_closure(expr->expr->bezier.p3,env);
+    step(conf);
+    p3 =conf->closure->expr;
+
+    conf->closure = mk_closure(expr->expr->bezier.p4,env);
+    step(conf);
+    p4 =conf->closure->expr;
+    conf->closure = mk_closure(mk_bezier(p1,p2,p3,p4),env);
     return ;
+    }
   case OP: 
     {
       struct stack *stack = conf->stack;
@@ -443,10 +398,14 @@ void step(struct configuration *conf){
 	struct expr *k3 = conf->closure->expr;
 	switch (expr->expr->op){
 	case HOMO:
-	  conf->closure=mk_closure(homothetie(conf,*k1,&k2->expr->cell,*k3),NULL);
+	  if(k3->type!=NUM && k2->type!=POINT)
+	    assert(0);
+	  //conf->closure=mk_closure(homothetie(k1,k2,k3),NULL);
 	  return;
 	case ROT:
-	  conf->closure=mk_closure(rotation(conf,*k1,&k2->expr->cell,*k3),NULL);
+	  if(k3->type!=NUM && k2->type!=POINT)
+	    assert(0);
+	  conf->closure=mk_closure(rotation(k1,k2,k3),NULL);
 	  return;
 	default: assert(0);
 	    }
@@ -455,7 +414,9 @@ void step(struct configuration *conf){
 	
       switch (expr->expr->op){
       case TRANS:
-	conf->closure=mk_closure(translation(conf,*k1,&k2->expr->cell),NULL);
+	if(k2->type != POINT)
+	  assert(0);
+	conf->closure=mk_closure(translation(k1,k2),NULL);
 	return ;
       case PLUS: //printf("plus\n");
 	if((k1->type!=NUM) || (k2->type!=NUM)){
@@ -506,7 +467,7 @@ void step(struct configuration *conf){
 	  conf->closure = mk_closure(mk_int(k1->expr->num == k2->expr->num),NULL);
 	}else{
 	  if((k1->type==CELL ||k1->type==NIL ) && (k2->type==CELL ||k2->type==NIL )){
-	    int test= elemStep(conf,&k1->expr->cell,&k2->expr->cell);
+	    int test= CompareCell(&k1->expr->cell,&k2->expr->cell);
 	    conf->closure = mk_closure(mk_int(test),NULL);
 	}else{
 	    exit(EXIT_FAILURE);

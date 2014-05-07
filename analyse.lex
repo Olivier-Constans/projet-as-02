@@ -25,6 +25,8 @@
 "Rotation"|"rotation"|"ROTATION"           {return T_ROTATION;}
 "Homothetie"|"HOMOTHETIE"|"homothetie"     {return T_HOMOTHETIE;}
 
+"DRAW"|"Draw"|"draw"                       {return T_DRAW;}
+
 \/\/.*          {ECHO;printf("\n");}
 
 [()]       {return yytext[0];}
